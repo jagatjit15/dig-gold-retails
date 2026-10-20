@@ -1,7 +1,8 @@
 """SwarnaERP backend entrypoint."""
 import logging
 import os
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from pathlib import Path
 from dotenv import load_dotenv
@@ -46,10 +47,21 @@ api_router.include_router(transfers_router)
 api_router.include_router(lookbook_router)
 app.include_router(api_router)
 
+ALLOWED_ORIGINS = os.environ["CORS_ORIGINS"].split(",")
+
+
+@app.middleware("http")
+async def check_origin(request: Request, call_next):
+    origin = request.headers.get("origin")
+    if request.method in ("POST", "PUT", "PATCH", "DELETE") and origin and origin not in ALLOWED_ORIGINS:
+        return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

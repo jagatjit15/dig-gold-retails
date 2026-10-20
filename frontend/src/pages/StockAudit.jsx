@@ -152,7 +152,7 @@ export default function StockAudit() {
                   const c = s.status === "found" ? "var(--success)" : s.status === "unknown" ? "var(--danger)" : "var(--warning)";
                   const Icon = s.status === "found" ? CheckCircle2 : AlertTriangle;
                   return (
-                  <div key={idx} className="flex items-center gap-3 text-sm">
+                  <div key={s.id} className="flex items-center gap-3 text-sm">
                     <Badge variant="outline" className="font-mono text-[10px] uppercase gap-1"
                       style={{ borderColor: c, color: c }}>
                       <Icon className="w-3 h-3" />

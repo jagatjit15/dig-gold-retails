@@ -32,10 +32,19 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  useEffect(() => {
+    localStorage.removeItem("swarna_access");
+    localStorage.removeItem("swarna_refresh");
+    if (!user) return;
+    api.get("/auth/me").then((r) => {
+      localStorage.setItem("swarna_user", JSON.stringify(r.data));
+      setUser(r.data);
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const login = async (email, password) => {
     const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("swarna_access", data.access_token);
-    localStorage.setItem("swarna_refresh", data.refresh_token);
     localStorage.setItem("swarna_user", JSON.stringify(data.user));
     setUser(data.user);
     if (data.user.branch_id) setBranchId(data.user.branch_id);
@@ -43,8 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("swarna_access");
-    localStorage.removeItem("swarna_refresh");
+    api.post("/auth/logout").catch(() => {});
     localStorage.removeItem("swarna_user");
     localStorage.removeItem("swarna_branch");
     setUser(null);

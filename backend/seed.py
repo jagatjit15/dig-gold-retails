@@ -1,28 +1,30 @@
 """Seed initial admin user, branches, purities, categories, daily rates.
 Runs idempotently on server startup."""
+import os
 from db import db
-from auth import hash_password
+from auth import hash_password, verify_password
 from models import (
     Branch, Purity, Category, DailyRate, now_iso, new_id,
 )
 
 
-SEED_ADMIN_EMAIL = "admin@swarnaerp.in"
-SEED_ADMIN_PASSWORD = "Admin@12345"
-
-
 async def seed_if_empty():
-    # Admin user
-    if not await db.users.find_one({"email": SEED_ADMIN_EMAIL}):
+    admin_email = os.environ["ADMIN_EMAIL"].lower()
+    admin_password = os.environ["ADMIN_PASSWORD"]
+    existing = await db.users.find_one({"email": admin_email}, {"_id": 0})
+    if existing and not verify_password(admin_password, existing["password_hash"]):
+        await db.users.update_one({"email": admin_email},
+                                  {"$set": {"password_hash": hash_password(admin_password)}})
+    if not existing:
         await db.users.insert_one({
             "id": new_id(),
-            "email": SEED_ADMIN_EMAIL,
+            "email": admin_email,
             "name": "System Admin",
             "role": "admin",
             "branch_id": None,
             "active": True,
             "created_at": now_iso(),
-            "password_hash": hash_password(SEED_ADMIN_PASSWORD),
+            "password_hash": hash_password(admin_password),
         })
 
     # Branches

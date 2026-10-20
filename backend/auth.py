@@ -2,17 +2,13 @@
 from __future__ import annotations
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 import bcrypt
 import jwt
-from fastapi import Depends, HTTPException, Header, status
-from pydantic import BaseModel
+from fastapi import Depends, HTTPException, Request, Response
 
 from db import db
-from models import UserInDB, UserPublic, Role
+from models import UserPublic, Role
 
-# Secret: pick up from env, fallback dev-only secret (fail-fast philosophy means
-# in prod this must be set).
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
 ACCESS_TTL_MIN = 15
@@ -65,10 +61,29 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-async def get_current_user(authorization: Optional[str] = Header(None)) -> UserPublic:
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Missing bearer token")
-    token = authorization.split(" ", 1)[1]
+ACCESS_COOKIE = "swarna_access"
+REFRESH_COOKIE = "swarna_refresh"
+
+
+def set_auth_cookies(response: Response, access: str, refresh: str):
+    response.set_cookie(ACCESS_COOKIE, access, httponly=True, secure=True, samesite="lax",
+                        max_age=ACCESS_TTL_MIN * 60, path="/api")
+    response.set_cookie(REFRESH_COOKIE, refresh, httponly=True, secure=True, samesite="lax",
+                        max_age=REFRESH_TTL_DAYS * 86400, path="/api/auth")
+
+
+def clear_auth_cookies(response: Response):
+    response.delete_cookie(ACCESS_COOKIE, path="/api", secure=True, httponly=True, samesite="lax")
+    response.delete_cookie(REFRESH_COOKIE, path="/api/auth", secure=True, httponly=True, samesite="lax")
+
+
+async def get_current_user(request: Request) -> UserPublic:
+    token = request.cookies.get(ACCESS_COOKIE)
+    authorization = request.headers.get("Authorization", "")
+    if not token and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     payload = decode_token(token)
     if payload.get("typ") != "access":
         raise HTTPException(status_code=401, detail="Not an access token")

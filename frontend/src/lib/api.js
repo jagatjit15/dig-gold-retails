@@ -3,9 +3,7 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
 
-export const api = axios.create({
-  baseURL: API_BASE,
-});
+export const api = axios.create({ baseURL: API_BASE, withCredentials: true });
 
 export function errMsg(err, fallback = "Something went wrong") {
   const d = err?.response?.data?.detail;
@@ -15,38 +13,25 @@ export function errMsg(err, fallback = "Something went wrong") {
   return d.msg || String(d);
 }
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("swarna_access");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+let refreshing = null;
+const NO_RETRY = ["/auth/login", "/auth/refresh", "/auth/logout"];
 
 api.interceptors.response.use(
   (r) => r,
   async (err) => {
-    const original = err.config;
-    if (err.response?.status === 401 && !original._retry) {
-      const refresh = localStorage.getItem("swarna_refresh");
-      if (refresh) {
-        original._retry = true;
-        try {
-          const { data } = await axios.post(`${API_BASE}/auth/refresh`, {
-            refresh_token: refresh,
-          });
-          localStorage.setItem("swarna_access", data.access_token);
-          localStorage.setItem("swarna_refresh", data.refresh_token);
-          original.headers.Authorization = `Bearer ${data.access_token}`;
-          return api(original);
-        } catch (_e) {
-          localStorage.removeItem("swarna_access");
-          localStorage.removeItem("swarna_refresh");
-          localStorage.removeItem("swarna_user");
-          window.location.href = "/login";
-        }
-      }
+    const original = err.config || {};
+    if (err.response?.status !== 401 || original._retry || NO_RETRY.some((p) => original.url?.includes(p))) {
+      return Promise.reject(err);
     }
-    return Promise.reject(err);
+    original._retry = true;
+    try {
+      refreshing = refreshing || api.post("/auth/refresh").finally(() => { refreshing = null; });
+      await refreshing;
+      return api(original);
+    } catch (_e) {
+      localStorage.removeItem("swarna_user");
+      if (window.location.pathname !== "/login") window.location.href = "/login";
+      return Promise.reject(err);
+    }
   }
 );

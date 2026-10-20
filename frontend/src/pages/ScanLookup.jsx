@@ -35,9 +35,9 @@ export default function ScanLookup() {
         `/scan/lookup?code=${encodeURIComponent(code)}`
       );
       await api.post("/scan", { code, code_type: "barcode", context: "lookup" });
-      setHistory((h) => [{ at: new Date(), code, ...data }, ...h].slice(0, 25));
+      setHistory((h) => [{ id: crypto.randomUUID(), at: new Date(), code, ...data }, ...h].slice(0, 25));
     } catch (err) {
-      setHistory((h) => [{
+      setHistory((h) => [{ id: crypto.randomUUID(),
         at: new Date(), code, found: false,
         warnings: [err.response?.data?.detail || "Lookup failed"],
       }, ...h].slice(0, 25));
@@ -107,7 +107,7 @@ export default function ScanLookup() {
           </div>
         )}
         {history.map((h, idx) => (
-          <Card key={idx}
+          <Card key={h.id}
             style={{
               borderColor: h.found && (!h.warnings || h.warnings.length === 0)
                 ? "var(--success)" : h.warnings?.length ? "var(--warning)" : "var(--danger)",

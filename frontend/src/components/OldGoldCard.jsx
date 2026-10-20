@@ -17,7 +17,7 @@ export function OldGoldCard({ entries, setEntries, priced }) {
 
   const add = (e) => {
     e.preventDefault();
-    setEntries([...entries, {
+    setEntries([...entries, { uid: crypto.randomUUID(),
       description: f.description || "Old gold", metal: f.metal, fineness: Number(f.fineness),
       gross_wt: Number(f.gross_wt), stone_wt: Number(f.stone_wt || 0), deduction_pct: Number(f.deduction_pct || 0),
     }]);
@@ -56,7 +56,7 @@ export function OldGoldCard({ entries, setEntries, priced }) {
         {entries.map((e, i) => {
           const p = priced?.[i];
           return (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-md border text-sm" style={{ borderColor: "var(--line)" }} data-testid={`old-gold-line-${i}`}>
+            <div key={e.uid} className="flex items-center gap-3 p-3 rounded-md border text-sm" style={{ borderColor: "var(--line)" }} data-testid={`old-gold-line-${i}`}>
               <div className="flex-1">
                 <div className="font-medium">{e.description}</div>
                 <div className="text-xs font-num" style={{ color: "var(--text-2)" }}>

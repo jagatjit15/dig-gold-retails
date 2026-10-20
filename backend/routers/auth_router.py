@@ -1,14 +1,12 @@
 """Auth endpoints: login, refresh, me, user CRUD (admin)."""
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from typing import List, Optional
 from pydantic import BaseModel
 
 from db import db
 from models import (
     LoginRequest,
-    RefreshRequest,
-    TokenPair,
     UserCreate,
     UserPublic,
     Role,
@@ -16,6 +14,9 @@ from models import (
     new_id,
 )
 from auth import (
+    REFRESH_COOKIE,
+    set_auth_cookies,
+    clear_auth_cookies,
     validate_password,
     verify_password,
     hash_password,
@@ -41,15 +42,19 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _tokens(doc: dict) -> TokenPair:
+class SessionOut(BaseModel):
+    user: UserPublic
+
+
+def _session(doc: dict, response: Response) -> SessionOut:
     user = UserPublic(**{k: v for k, v in doc.items() if k != "password_hash"})
     tv = doc.get("token_version", 0)
-    return TokenPair(access_token=make_access_token(user, tv),
-                     refresh_token=make_refresh_token(user, tv), user=user)
+    set_auth_cookies(response, make_access_token(user, tv), make_refresh_token(user, tv))
+    return SessionOut(user=user)
 
 
-@router.post("/login", response_model=TokenPair)
-async def login(body: LoginRequest, request: Request):
+@router.post("/login", response_model=SessionOut)
+async def login(body: LoginRequest, request: Request, response: Response):
     email = body.email.lower()
     ident = f"{_client_ip(request)}:{email}"
     now = datetime.now(timezone.utc)
@@ -69,12 +74,15 @@ async def login(body: LoginRequest, request: Request):
         raise HTTPException(status_code=403, detail="Account deactivated. Contact your admin.")
     await db.login_attempts.delete_one({"identifier": ident})
     await log_event("auth", "login", user_id=doc["id"], branch_id=doc.get("branch_id"))
-    return _tokens(doc)
+    return _session(doc, response)
 
 
-@router.post("/refresh", response_model=TokenPair)
-async def refresh(body: RefreshRequest):
-    payload = decode_token(body.refresh_token)
+@router.post("/refresh", response_model=SessionOut)
+async def refresh(request: Request, response: Response):
+    token = request.cookies.get(REFRESH_COOKIE)
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = decode_token(token)
     if payload.get("typ") != "refresh":
         raise HTTPException(status_code=401, detail="Not a refresh token")
     doc = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
@@ -82,7 +90,13 @@ async def refresh(body: RefreshRequest):
         raise HTTPException(status_code=401, detail="User not found")
     if payload.get("tv", 0) != doc.get("token_version", 0):
         raise HTTPException(status_code=401, detail="Session revoked, please sign in again")
-    return _tokens(doc)
+    return _session(doc, response)
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    clear_auth_cookies(response)
+    return {"ok": True}
 
 
 @router.get("/me", response_model=UserPublic)
