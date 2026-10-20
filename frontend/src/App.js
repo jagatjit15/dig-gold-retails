@@ -15,6 +15,8 @@ import AuditLog from "@/pages/AuditLog";
 import ScanLookup from "@/pages/ScanLookup";
 import Documents from "@/pages/Documents";
 import Billing from "@/pages/Billing";
+import Transfers from "@/pages/Transfers";
+import Lookbook from "@/pages/Lookbook";
 import Staff from "@/pages/Staff";
 import WhatsApp from "@/pages/WhatsApp";
 
@@ -57,6 +59,8 @@ function App() {
             <Route path="audit-log" element={<AuditLog />} />
             <Route path="documents" element={<Documents />} />
             <Route path="billing" element={<Billing />} />
+            <Route path="transfers" element={<Transfers />} />
+            <Route path="lookbook" element={<Lookbook />} />
             <Route path="staff" element={<Protected roles={["admin"]}><Staff /></Protected>} />
             <Route path="whatsapp" element={<WhatsApp />} />
           </Route>

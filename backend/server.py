@@ -16,6 +16,8 @@ from routers.inventory_router import router as inventory_router  # noqa: E402
 from routers.files_router import router as files_router  # noqa: E402
 from routers.billing_router import router as billing_router  # noqa: E402
 from routers.whatsapp_router import router as whatsapp_router  # noqa: E402
+from routers.transfers_router import router as transfers_router  # noqa: E402
+from routers.lookbook_router import router as lookbook_router  # noqa: E402
 from seed import seed_if_empty  # noqa: E402
 from storage import init_storage  # noqa: E402
 
@@ -40,6 +42,8 @@ api_router.include_router(inventory_router)
 api_router.include_router(files_router)
 api_router.include_router(billing_router)
 api_router.include_router(whatsapp_router)
+api_router.include_router(transfers_router)
+api_router.include_router(lookbook_router)
 app.include_router(api_router)
 
 app.add_middleware(

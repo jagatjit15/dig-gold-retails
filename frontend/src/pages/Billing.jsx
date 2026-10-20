@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CameraScanButton } from "@/components/CameraScanner";
+import { OldGoldCard } from "@/components/OldGoldCard";
 import { X, FileDown, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -85,7 +86,11 @@ function Totals({ q }) {
         {row("SGST 1.5%", q.sgst, "billing-gst-summary-sgst")}
       </>)}
       {row("Round off", q.round_off, "billing-round-off-val")}
-      {row("Grand total", q.grand_total, "billing-grand-total-val", true)}
+      {row("Invoice total", q.grand_total, "billing-grand-total-val", !q.old_gold_total)}
+      {q.old_gold_total > 0 && (<>
+        {row("Less old gold", -q.old_gold_total, "billing-old-gold-total-val")}
+        {row("Net payable", q.net_payable, "billing-net-payable-val", true)}
+      </>)}
     </div>
   );
 }
@@ -102,7 +107,7 @@ function BillHistory({ bills, reload }) {
               <div className="font-mono font-semibold">{b.bill_no}</div>
               <div className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{b.customer_name} · {b.lines.map((l) => l.tag_id).join(", ")}</div>
             </div>
-            <div className="font-num font-semibold">{inr(b.grand_total)}</div>
+            <div className="font-num font-semibold">{inr(b.net_payable ?? b.grand_total)}</div>
             <Button size="icon" variant="ghost" onClick={() => openPdf(b)} data-testid={`bill-pdf-${b.bill_no}`}><FileDown className="w-4 h-4" /></Button>
             {b.customer_phone && <Button size="icon" variant="ghost" onClick={() => sendWa(b, reload)} data-testid={`bill-whatsapp-${b.bill_no}`}><MessageCircle className="w-4 h-4" /></Button>}
           </div>
@@ -120,6 +125,7 @@ export default function Billing() {
   const [code, setCode] = useState("");
   const [cart, setCart] = useState([]);
   const [overrides, setOverrides] = useState({});
+  const [oldGold, setOldGold] = useState([]);
   const [cust, setCust] = useState(EMPTY_CUST);
   const [payment, setPayment] = useState("cash");
   const [quote, setQuote] = useState(null);
@@ -137,7 +143,7 @@ export default function Billing() {
     branch_id: branchId, item_ids: cart.map((i) => i.id), customer_name: cust.name,
     customer_phone: cust.phone || null, customer_address: cust.address || null,
     customer_gstin: cust.gstin || null, customer_state_code: cust.state || branch?.state_code || null,
-    payment_mode: payment, making_overrides: overrides,
+    payment_mode: payment, making_overrides: overrides, old_gold: oldGold,
   });
 
   useEffect(() => {
@@ -145,7 +151,7 @@ export default function Billing() {
     const t = setTimeout(() => api.post("/bills/quote", payload()).then((r) => setQuote(r.data))
       .catch((err) => toast.error(errMsg(err, "Could not price items"))), 250);
     return () => clearTimeout(t);
-  }, [cart, overrides, cust.state]); // eslint-disable-line
+  }, [cart, overrides, cust.state, oldGold]); // eslint-disable-line
 
   const addCode = async (raw) => {
     const c = raw.trim();
@@ -165,7 +171,7 @@ export default function Billing() {
     try {
       const { data } = await api.post("/bills", payload());
       toast.success(`Bill ${data.bill_no} generated · items marked sold`);
-      setLast(data); setCart([]); setOverrides({}); setCust(EMPTY_CUST);
+      setLast(data); setCart([]); setOverrides({}); setOldGold([]); setCust(EMPTY_CUST);
       loadBills();
     } catch (err) { toast.error(errMsg(err, "Billing failed")); } finally { setBusy(false); }
   };
@@ -211,6 +217,7 @@ export default function Billing() {
                 </Select></div>
             </CardContent>
           </Card>
+          <OldGoldCard entries={oldGold} setEntries={setOldGold} priced={quote?.old_gold} />
         </div>
         <div className="space-y-6">
           <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
@@ -222,7 +229,8 @@ export default function Billing() {
               </Button>
               {last && (
                 <div className="p-4 rounded-md border space-y-3" style={{ borderColor: "var(--success)" }} data-testid="last-bill-summary">
-                  <div className="font-mono font-semibold">{last.bill_no} · {last.customer_name} · {inr(last.grand_total)}</div>
+                  <div className="font-mono font-semibold">{last.bill_no} · {last.customer_name} · {inr(last.net_payable ?? last.grand_total)}</div>
+                  {last.old_gold_total > 0 && <div className="text-xs font-num" style={{ color: "var(--text-2)" }}>Invoice {inr(last.grand_total)} − old gold {inr(last.old_gold_total)}</div>}
                   {last.whatsapp_status && <div className="text-xs" style={{ color: "var(--text-2)" }}>WhatsApp: {last.whatsapp_status === "mocked" ? "recorded (no provider connected)" : last.whatsapp_status.replace("_", " ")}</div>}
                   <div className="flex gap-2">
                     <Button variant="outline" className="gap-2 flex-1" onClick={() => openPdf(last)} data-testid="generate-gst-pdf-invoice-button"><FileDown className="w-4 h-4" /> PDF invoice</Button>

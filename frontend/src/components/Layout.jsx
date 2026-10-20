@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   Crown, LayoutDashboard, Package, ScanLine, ClipboardCheck,
-  Settings, Printer, ShieldCheck, Sun, Moon, LogOut, Receipt, FolderOpen, MessageCircle, Users,
+  Settings, Printer, ShieldCheck, Sun, Moon, LogOut, Receipt, FolderOpen, MessageCircle, Users, Truck, Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -19,9 +19,11 @@ const NAV = [
   { to: "/inventory", label: "Inventory", icon: Package, tid: "nav-inventory" },
   { to: "/scan", label: "Scan Lookup", icon: ScanLine, tid: "nav-scan" },
   { to: "/audit", label: "Stock Audit", icon: ClipboardCheck, tid: "nav-audit" },
+  { to: "/transfers", label: "Transfers", icon: Truck, tid: "nav-transfers" },
   { to: "/labels", label: "Label Print", icon: Printer, tid: "nav-labels" },
   { to: "/documents", label: "Documents", icon: FolderOpen, tid: "nav-documents" },
   { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle, tid: "nav-whatsapp" },
+  { to: "/lookbook", label: "Lookbook", icon: Sparkles, tid: "nav-lookbook" },
   { to: "/staff", label: "Staff", icon: Users, tid: "nav-staff", roles: ["admin"] },
   { to: "/masters", label: "Masters & Rates", icon: Settings, tid: "nav-masters" },
   { to: "/audit-log", label: "Audit Log", icon: ShieldCheck, tid: "nav-audit-log" },

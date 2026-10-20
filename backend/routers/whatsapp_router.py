@@ -40,12 +40,9 @@ class Broadcast(BaseModel):
     phones: List[str] = []
 
 
-@router.post("/broadcast")
-async def broadcast(body: Broadcast,
-                    user: UserPublic = Depends(require_roles("admin", "manager"))):
-    enforce_branch(user, body.branch_id)
-    raw = body.phones if body.audience == "custom" else await db.bills.distinct(
-        "customer_phone", {"branch_id": body.branch_id, "customer_phone": {"$nin": [None, ""]}})
+async def resolve_recipients(branch_id: str, audience: str, phones: List[str]):
+    raw = phones if audience == "custom" else await db.bills.distinct(
+        "customer_phone", {"branch_id": branch_id, "customer_phone": {"$nin": [None, ""]}})
     numbers = {normalize_phone(p) for p in raw}
     invalid = sum(1 for p in raw if not normalize_phone(p))
     numbers.discard(None)
@@ -53,10 +50,18 @@ async def broadcast(body: Broadcast,
         raise HTTPException(400, "No valid recipient numbers")
     if len(numbers) > 1000:
         raise HTTPException(400, "Maximum 1000 recipients per broadcast")
+    return sorted(numbers), invalid
+
+
+@router.post("/broadcast")
+async def broadcast(body: Broadcast,
+                    user: UserPublic = Depends(require_roles("admin", "manager"))):
+    enforce_branch(user, body.branch_id)
+    numbers, invalid = await resolve_recipients(body.branch_id, body.audience, body.phones)
     provider = get_provider()
     campaign = new_id()
     counts = {"sent": 0, "failed": 0}
-    for to in sorted(numbers):
+    for to in numbers:
         try:
             res = await provider.send_text(to, body.message)
             st, err = res.get("status", "sent"), None

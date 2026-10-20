@@ -28,6 +28,9 @@ class WhatsAppProvider:
                             caption: str) -> dict:
         raise NotImplementedError
 
+    async def send_image(self, to: str, filename: str, data: bytes, caption: str) -> dict:
+        return await self.send_document(to, filename, data, "image/png", caption)
+
 
 class MockProvider(WhatsAppProvider):
     name = "mock"
@@ -71,8 +74,10 @@ async def send_invoice_message(bill: dict, branch: dict, actor_id: str) -> dict:
             "created_by": actor_id}
     if not to:
         return await record_message(**base, status="invalid_number", error="Invalid phone number")
+    payable = bill.get("net_payable")
+    payable = bill["grand_total"] if payable is None else payable
     caption = (f"Dear {bill['customer_name']}, thank you for shopping at {branch['name']}. "
-               f"Your invoice {bill['bill_no']} for Rs. {bill['grand_total']:,.2f} is attached.")
+               f"Your invoice {bill['bill_no']} for Rs. {payable:,.2f} is attached.")
     try:
         pdf = build_invoice_pdf(bill, branch)
         res = await provider.send_document(to, f"{bill['bill_no']}.pdf", pdf,

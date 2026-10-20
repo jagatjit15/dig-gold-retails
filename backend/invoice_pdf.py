@@ -114,11 +114,32 @@ def build_invoice_pdf(bill: dict, branch: dict) -> bytes:
         tot.append([f"IGST @ {rate:g}%", _m(bill["igst"])])
     else:
         tot += [[f"CGST @ {rate / 2:g}%", _m(bill["cgst"])], [f"SGST @ {rate / 2:g}%", _m(bill["sgst"])]]
-    tot += [["Round off", _m(bill.get("round_off", 0))], ["Grand total (Rs.)", _m(bill["grand_total"])]]
+    tot += [["Round off", _m(bill.get("round_off", 0))], ["Invoice total (Rs.)", _m(bill["grand_total"])]]
     totals = Table(tot, colWidths=[45 * mm, 32 * mm], hAlign="RIGHT")
     totals.setStyle(TableStyle(grid + [("ALIGN", (1, 0), (1, -1), "RIGHT"),
                                        ("FONT", (0, 0), (-1, -1), "Helvetica", 9),
                                        ("FONT", (0, -1), (-1, -1), "Helvetica-Bold", 10)]))
+
+    old = bill.get("old_gold") or []
+    payable = bill.get("net_payable")
+    payable = bill["grand_total"] if payable is None else payable
+    old_parts = []
+    if old:
+        orows = [["Old gold / exchange", "Fineness", "Gross g", "Net g", "Fine g", "Deduct %", "Value"]]
+        orows += [[Paragraph(o["description"], s), f"{o['fineness']:.3f}", f"{o['gross_wt']:.3f}",
+                   f"{o['net_wt']:.3f}", f"{o['fine_wt']:.3f}", f"{o['deduction_pct']:g}",
+                   _m(o["value"])] for o in old]
+        ot = Table(orows, colWidths=[56 * mm, 20 * mm, 20 * mm, 20 * mm, 20 * mm, 18 * mm, 32 * mm])
+        ot.setStyle(TableStyle(grid + [("FONT", (0, 0), (-1, 0), "Helvetica-Bold", 8),
+                                       ("FONT", (0, 1), (-1, -1), "Helvetica", 8),
+                                       ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E6E6E6")),
+                                       ("ALIGN", (1, 0), (-1, -1), "RIGHT")]))
+        net = Table([["Less: old gold value", _m(-bill.get("old_gold_total", 0))],
+                     ["Net payable (Rs.)", _m(payable)]], colWidths=[45 * mm, 32 * mm], hAlign="RIGHT")
+        net.setStyle(TableStyle(grid + [("ALIGN", (1, 0), (1, -1), "RIGHT"),
+                                        ("FONT", (0, 0), (-1, -1), "Helvetica", 9),
+                                        ("FONT", (0, -1), (-1, -1), "Helvetica-Bold", 10)]))
+        old_parts = [Spacer(1, 4 * mm), ot, Spacer(1, 3 * mm), net]
 
     sign = Table([[Paragraph("Certified that the particulars given above are true and correct. "
                              "Weights in grams. Goods once sold are subject to the shop's exchange policy.", s),
@@ -126,7 +147,7 @@ def build_invoice_pdf(bill: dict, branch: dict) -> bytes:
                              ParagraphStyle("sg", parent=s, alignment=2))]],
                  colWidths=[116 * mm, 70 * mm])
     doc.build([head, Spacer(1, 4 * mm), cust, Spacer(1, 4 * mm), lines, Spacer(1, 3 * mm),
-               totals, Spacer(1, 3 * mm),
-               Paragraph(f"Amount in words: <b>{amount_in_words(bill['grand_total'])}</b>", s),
+               totals, *old_parts, Spacer(1, 3 * mm),
+               Paragraph(f"Amount {'payable ' if old else ''}in words: <b>{amount_in_words(payable)}</b>", s),
                Spacer(1, 10 * mm), sign])
     return buf.getvalue()

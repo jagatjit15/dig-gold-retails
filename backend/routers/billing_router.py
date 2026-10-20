@@ -25,6 +25,22 @@ class MakingOverride(BaseModel):
     making_charge_value: float = Field(ge=0)
 
 
+class OldGoldIn(BaseModel):
+    description: str = "Old gold"
+    metal: Literal["gold", "silver", "platinum"] = "gold"
+    fineness: float = Field(gt=0, le=1)
+    gross_wt: float = Field(gt=0)
+    stone_wt: float = Field(default=0, ge=0)
+    deduction_pct: float = Field(default=0, ge=0, lt=100)
+
+
+class OldGoldLine(OldGoldIn):
+    net_wt: float
+    fine_wt: float
+    rate_per_fine_gram: float
+    value: float
+
+
 class BillCreate(BaseModel):
     branch_id: str
     item_ids: List[str] = Field(min_length=1)
@@ -35,6 +51,7 @@ class BillCreate(BaseModel):
     customer_state_code: Optional[str] = None
     payment_mode: Literal["cash", "card", "upi", "bank", "mixed"] = "cash"
     making_overrides: Dict[str, MakingOverride] = {}
+    old_gold: List[OldGoldIn] = []
 
 
 class BillLine(BaseModel):
@@ -64,6 +81,9 @@ class Totals(BaseModel):
     round_off: float = 0
     grand_total: float
     inter_state: bool = False
+    old_gold: List[OldGoldLine] = []
+    old_gold_total: float = 0
+    net_payable: Optional[float] = None
 
 
 class Bill(Totals):
@@ -116,7 +136,7 @@ async def _price_lines(items: List[dict], overrides: Dict[str, MakingOverride]) 
 
 
 def _totals(lines: List[BillLine], branch_state: Optional[str],
-            cust_state: Optional[str]) -> Totals:
+            cust_state: Optional[str], old: List[OldGoldLine]) -> Totals:
     subtotal = round(sum(ln.taxable for ln in lines), 2)
     tax = round(sum(ln.taxable * ln.gst_rate / 100 for ln in lines), 2)
     inter = bool(cust_state and branch_state and cust_state != branch_state)
@@ -125,9 +145,38 @@ def _totals(lines: List[BillLine], branch_state: Optional[str],
     igst = tax if inter else 0
     exact = subtotal + cgst + sgst + igst
     grand = math.floor(exact + 0.5)
+    old_total = float(math.floor(sum(o.value for o in old) + 0.5))
+    if old_total > grand:
+        raise HTTPException(400, "Old gold value is more than the bill; refunds are not supported")
     return Totals(lines=lines, subtotal=subtotal, cgst=cgst, sgst=sgst, igst=igst,
                   round_off=round(grand - exact, 2), grand_total=float(grand),
-                  inter_state=inter)
+                  inter_state=inter, old_gold=old, old_gold_total=old_total,
+                  net_payable=float(grand - old_total))
+
+
+async def _price_old_gold(entries: List[OldGoldIn]) -> List[OldGoldLine]:
+    per_fine = {}
+    out = []
+    for e in entries:
+        if e.metal not in per_fine:
+            purities = sorted(await db.purities.find({"metal": e.metal}, {"_id": 0}).to_list(50),
+                              key=lambda p: -p["fineness"])
+            for p in purities:
+                r = await db.daily_rates.find_one({"purity_code": p["code"]}, {"_id": 0},
+                                                  sort=[("rate_date", -1), ("created_at", -1)])
+                if r:
+                    per_fine[e.metal] = r["rate_per_gram"] / p["fineness"]
+                    break
+            else:
+                raise HTTPException(400, f"No daily rate set for {e.metal}")
+        net = round(e.gross_wt - e.stone_wt, 3)
+        if net <= 0:
+            raise HTTPException(400, f"{e.description}: stone weight must be less than gross weight")
+        fine = round(net * e.fineness, 3)
+        out.append(OldGoldLine(**e.model_dump(), net_wt=net, fine_wt=fine,
+                               rate_per_fine_gram=round(per_fine[e.metal], 2),
+                               value=round(fine * per_fine[e.metal] * (1 - e.deduction_pct / 100), 2)))
+    return out
 
 
 async def _compute(body: BillCreate, user: UserPublic):
@@ -145,7 +194,8 @@ async def _compute(body: BillCreate, user: UserPublic):
         if it["status"] != "in_stock":
             raise HTTPException(409, f"{it['tag_id']} is not in stock ({it['status']})")
     lines = await _price_lines(items, body.making_overrides)
-    return branch, items, _totals(lines, branch.get("state_code"), body.customer_state_code)
+    old = await _price_old_gold(body.old_gold)
+    return branch, items, _totals(lines, branch.get("state_code"), body.customer_state_code, old)
 
 
 @router.post("/quote", response_model=Totals)
@@ -184,10 +234,19 @@ async def create_bill(body: BillCreate,
         StockMovement(movement_type="sale", item_id=ln.item_id, weight=ln.net_wt,
                       branch_id=body.branch_id, reference=bill.bill_no,
                       user_id=user.id).model_dump() for ln in bill.lines])
+    if bill.old_gold:
+        lots = [{"id": new_id(), "bill_id": bill.id, "bill_no": bill.bill_no,
+                 "branch_id": body.branch_id, "status": "in_stock", "created_at": now_iso(),
+                 **o.model_dump()} for o in bill.old_gold]
+        await db.old_gold_lots.insert_many([dict(x) for x in lots])
+        await db.stock_movements.insert_many([
+            StockMovement(movement_type="receipt", loose_lot_id=lot["id"], weight=lot["net_wt"],
+                          branch_id=body.branch_id, reference=f"OLDGOLD:{bill.bill_no}",
+                          user_id=user.id).model_dump() for lot in lots])
     await log_event("bill", "create", entity_id=bill.id, user_id=user.id,
                     branch_id=body.branch_id,
                     diff={"bill_no": bill.bill_no, "items": [ln.tag_id for ln in bill.lines],
-                          "grand_total": bill.grand_total})
+                          "grand_total": bill.grand_total, "old_gold_total": bill.old_gold_total})
     if bill.customer_phone:
         try:
             rec = await send_invoice_message(bill.model_dump(), branch, user.id)
@@ -204,6 +263,13 @@ async def list_bills(branch_id: str, user: UserPublic = Depends(get_current_user
     docs = await db.bills.find({"branch_id": branch_id}, {"_id": 0}).sort(
         [("created_at", -1)]).to_list(200)
     return [Bill(**d) for d in docs]
+
+
+@router.get("/old-gold")
+async def list_old_gold(branch_id: str, user: UserPublic = Depends(get_current_user)):
+    enforce_branch(user, branch_id)
+    return await db.old_gold_lots.find({"branch_id": branch_id}, {"_id": 0}).sort(
+        [("created_at", -1)]).to_list(500)
 
 
 @router.get("/{bill_id}/pdf")
