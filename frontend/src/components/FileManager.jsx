@@ -15,7 +15,7 @@ function fmtSize(b) {
 function Thumb({ file }) {
   const [url, setUrl] = useState(null);
   useEffect(() => {
-    if (!file.content_type.startsWith("image/")) return;
+    if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.content_type)) return;
     let u;
     api.get(`/files/${file.id}/download`, { responseType: "blob" })
       .then((r) => { u = URL.createObjectURL(r.data); setUrl(u); })

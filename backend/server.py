@@ -50,12 +50,29 @@ app.include_router(api_router)
 ALLOWED_ORIGINS = os.environ["CORS_ORIGINS"].split(",")
 
 
+UNSAFE = ("POST", "PUT", "PATCH", "DELETE")
+
+
+def _origin_allowed(request: Request) -> bool:
+    origin = request.headers.get("origin")
+    if origin:
+        return origin in ALLOWED_ORIGINS
+    referer = request.headers.get("referer")
+    if referer:
+        return any(referer == o or referer.startswith(o + "/") for o in ALLOWED_ORIGINS)
+    # Non-browser clients without cookies (e.g. login from scripts) carry no CSRF risk
+    return not (request.cookies.get("swarna_access") or request.cookies.get("swarna_refresh"))
+
+
 @app.middleware("http")
 async def check_origin(request: Request, call_next):
-    origin = request.headers.get("origin")
-    if request.method in ("POST", "PUT", "PATCH", "DELETE") and origin and origin not in ALLOWED_ORIGINS:
+    if request.method in UNSAFE and not _origin_allowed(request):
         return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
-    return await call_next(request)
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    return response
 
 
 app.add_middleware(

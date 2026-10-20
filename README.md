@@ -109,7 +109,7 @@ Locally the frontend (3000) and backend (8001) run on different ports. Auth cook
 | `DB_NAME` | Database name |
 | `JWT_SECRET` | Long random string used to sign JWTs (`python -c "import secrets;print(secrets.token_urlsafe(48))"`) |
 | `CORS_ORIGINS` | Comma-separated allowed origins. **Must include every domain the app is served from**; it is also used by the Origin (CSRF) check |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Seeded admin account; the password is re-synced on every startup |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Seeded admin account, created on first start only. Later password changes are made in the app (Staff → reset password); use a strong, unique value in production |
 | `EMERGENT_LLM_KEY` | Key for Emergent object storage (file uploads, lookbook cards) |
 | `WHATSAPP_PROVIDER` | Provider key registered in `whatsapp.py` (`mock` by default) |
 

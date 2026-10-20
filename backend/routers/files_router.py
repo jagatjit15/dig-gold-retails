@@ -1,5 +1,6 @@
 """File & media attachments: per item and per-branch document library."""
 import asyncio
+import re
 import uuid
 from typing import List, Literal, Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -14,6 +15,7 @@ from storage import APP_NAME, put_object, get_object
 
 router = APIRouter(prefix="/files", tags=["files"])
 MAX_BYTES = 25 * 1024 * 1024
+INLINE_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"}
 
 
 class FileRecord(BaseModel):
@@ -104,9 +106,13 @@ async def download_file(file_id: str, user: UserPublic = Depends(get_current_use
         data, _ = await asyncio.to_thread(get_object, rec["storage_path"])
     except Exception as e:
         raise HTTPException(502, f"Storage download failed: {e}")
-    safe = rec["original_filename"].replace('"', "")
-    return Response(content=data, media_type=rec["content_type"],
-                    headers={"Content-Disposition": f'inline; filename="{safe}"'})
+    safe = re.sub(r'[^\w.\- ]', "_", rec["original_filename"])[:120] or "file"
+    ctype = rec["content_type"].split(";")[0].strip().lower()
+    inline = ctype in INLINE_TYPES
+    return Response(content=data, media_type=ctype if inline else "application/octet-stream",
+                    headers={"Content-Disposition": f'{"inline" if inline else "attachment"}; filename="{safe}"',
+                             "X-Content-Type-Options": "nosniff",
+                             "Content-Security-Policy": "default-src 'none'; sandbox"})
 
 
 @router.delete("/{file_id}")

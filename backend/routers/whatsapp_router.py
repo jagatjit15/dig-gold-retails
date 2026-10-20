@@ -1,4 +1,5 @@
 """WhatsApp: invoice send, broadcasts, outbox."""
+from datetime import datetime, timedelta, timezone
 from typing import List, Literal, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -40,7 +41,20 @@ class Broadcast(BaseModel):
     phones: List[str] = []
 
 
+BROADCASTS_PER_HOUR = 10
+
+
+async def check_broadcast_quota(branch_id: str):
+    since = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    recent = await db.whatsapp_messages.distinct(
+        "campaign_id", {"branch_id": branch_id, "created_at": {"$gte": since},
+                        "campaign_id": {"$ne": None}})
+    if len(recent) >= BROADCASTS_PER_HOUR:
+        raise HTTPException(429, f"Limit of {BROADCASTS_PER_HOUR} broadcasts per hour reached for this branch")
+
+
 async def resolve_recipients(branch_id: str, audience: str, phones: List[str]):
+    await check_broadcast_quota(branch_id)
     raw = phones if audience == "custom" else await db.bills.distinct(
         "customer_phone", {"branch_id": branch_id, "customer_phone": {"$nin": [None, ""]}})
     numbers = {normalize_phone(p) for p in raw}

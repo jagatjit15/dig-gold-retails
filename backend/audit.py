@@ -1,5 +1,6 @@
 """Append-only hash-chained audit log."""
 from __future__ import annotations
+import asyncio
 import hashlib
 import json
 from typing import Optional
@@ -23,6 +24,9 @@ def _hash_entry(entry: dict, prev_hash: Optional[str]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+_lock = asyncio.Lock()
+
+
 async def log_event(
     entity: str,
     action: str,
@@ -32,6 +36,11 @@ async def log_event(
     branch_id: Optional[str] = None,
     diff: Optional[dict] = None,
 ):
+    async with _lock:
+        return await _append(entity, action, entity_id, user_id, branch_id, diff)
+
+
+async def _append(entity, action, entity_id, user_id, branch_id, diff):
     last = await db.audit_log.find_one(
         {}, {"_id": 0, "hash": 1}, sort=[("created_at", -1)]
     )

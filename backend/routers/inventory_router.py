@@ -1,15 +1,15 @@
 """Inventory items + scan service + stock audit + stock movements."""
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
+import re
 from typing import List, Optional
 from pydantic import BaseModel
 
 from db import db
 from models import (
     Item, ItemCreate,
-    StockMovement, StockMovementCreate,
-    ScanLog, ScanRequest,
+    StockMovement, ScanLog, ScanRequest,
     AuditSession, AuditScan,
-    UserPublic, now_iso, new_id,
+    UserPublic, now_iso,
 )
 from auth import get_current_user, enforce_branch, require_roles
 from audit import log_event
@@ -35,11 +35,12 @@ async def list_items(
     if status:
         query["status"] = status
     if q:
+        pattern = re.escape(q.strip()[:64])
         query["$or"] = [
-            {"tag_id": {"$regex": q, "$options": "i"}},
-            {"barcode": {"$regex": q, "$options": "i"}},
-            {"rfid_epc": {"$regex": q, "$options": "i"}},
-            {"huid": {"$regex": q, "$options": "i"}},
+            {"tag_id": {"$regex": pattern, "$options": "i"}},
+            {"barcode": {"$regex": pattern, "$options": "i"}},
+            {"rfid_epc": {"$regex": pattern, "$options": "i"}},
+            {"huid": {"$regex": pattern, "$options": "i"}},
         ]
     docs = await db.items.find(query, {"_id": 0}).sort([("created_at", -1)]).to_list(500)
     return [Item(**d) for d in docs]
@@ -101,6 +102,8 @@ async def scan(body: ScanRequest, user: UserPublic = Depends(get_current_user)):
         ]},
         {"_id": 0},
     )
+    if item_doc and user.role != "admin" and item_doc["branch_id"] != user.branch_id:
+        item_doc = None
     log = ScanLog(
         code=code,
         code_type=body.code_type,
@@ -348,8 +351,9 @@ async def close_audit(
 @router.get("/audit-log")
 async def read_audit_log(
     limit: int = 100,
-    _: UserPublic = Depends(require_roles("admin", "manager", "auditor")),
+    user: UserPublic = Depends(require_roles("admin", "manager", "auditor")),
 ):
-    docs = await db.audit_log.find({}, {"_id": 0}).sort(
-        [("created_at", -1)]).to_list(min(limit, 500))
+    q = {} if user.role == "admin" else {"branch_id": user.branch_id}
+    docs = await db.audit_log.find(q, {"_id": 0}).sort(
+        [("created_at", -1)]).to_list(min(max(limit, 1), 500))
     return docs

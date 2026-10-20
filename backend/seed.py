@@ -2,7 +2,7 @@
 Runs idempotently on server startup."""
 import os
 from db import db
-from auth import hash_password, verify_password
+from auth import hash_password
 from models import (
     Branch, Purity, Category, DailyRate, now_iso, new_id,
 )
@@ -12,9 +12,6 @@ async def seed_if_empty():
     admin_email = os.environ["ADMIN_EMAIL"].lower()
     admin_password = os.environ["ADMIN_PASSWORD"]
     existing = await db.users.find_one({"email": admin_email}, {"_id": 0})
-    if existing and not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one({"email": admin_email},
-                                  {"$set": {"password_hash": hash_password(admin_password)}})
     if not existing:
         await db.users.insert_one({
             "id": new_id(),

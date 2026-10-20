@@ -83,7 +83,7 @@ Shared Pydantic models and helpers:
 
 ### 3.6 `seed.py`
 Idempotent startup seed:
-- Admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. If the user exists and the password changed, the hash is updated.
+- Admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD`, created only if missing (the password is never overwritten on restart).
 - Two sample branches, five purities (24K, 22K916, 18K, 925, PT950), six categories (HSN 7113/7114/7118, 3% GST) and today's rates, each only if its collection is empty.
 
 ### 3.7 `storage.py`

@@ -8,7 +8,7 @@ from models import (
     Purity, PurityCreate,
     Category, CategoryCreate,
     DailyRate, DailyRateCreate,
-    UserPublic, now_iso,
+    UserPublic,
 )
 from auth import get_current_user, require_roles
 from audit import log_event
