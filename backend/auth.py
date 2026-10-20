@@ -15,8 +15,13 @@ from models import UserInDB, UserPublic, Role
 # in prod this must be set).
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
-ACCESS_TTL_MIN = 60
+ACCESS_TTL_MIN = 15
 REFRESH_TTL_DAYS = 7
+
+
+def validate_password(plain: str):
+    if len(plain) < 8 or not any(c.isalpha() for c in plain) or not any(c.isdigit() for c in plain):
+        raise HTTPException(400, "Password must be at least 8 characters with letters and numbers")
 
 
 def hash_password(plain: str) -> str:
@@ -37,16 +42,16 @@ def _make_token(payload: dict, expires_delta: timedelta) -> str:
     return jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGO)
 
 
-def make_access_token(user: UserPublic) -> str:
+def make_access_token(user: UserPublic, tv: int = 0) -> str:
     return _make_token(
-        {"sub": user.id, "role": user.role, "branch_id": user.branch_id, "typ": "access"},
+        {"sub": user.id, "role": user.role, "branch_id": user.branch_id, "typ": "access", "tv": tv},
         timedelta(minutes=ACCESS_TTL_MIN),
     )
 
 
-def make_refresh_token(user: UserPublic) -> str:
+def make_refresh_token(user: UserPublic, tv: int = 0) -> str:
     return _make_token(
-        {"sub": user.id, "typ": "refresh"},
+        {"sub": user.id, "typ": "refresh", "tv": tv},
         timedelta(days=REFRESH_TTL_DAYS),
     )
 
@@ -70,6 +75,8 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> UserP
     doc = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
     if not doc or not doc.get("active", True):
         raise HTTPException(status_code=401, detail="User not found or inactive")
+    if payload.get("tv", 0) != doc.get("token_version", 0):
+        raise HTTPException(status_code=401, detail="Session revoked, please sign in again")
     return UserPublic(**{k: v for k, v in doc.items() if k != "password_hash"})
 
 

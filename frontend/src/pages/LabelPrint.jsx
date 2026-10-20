@@ -73,7 +73,7 @@ export default function LabelPrint() {
       <div>
         <p className="text-xs uppercase tracking-[0.25em]"
           style={{ color: "var(--text-muted)" }}>Label Printing</p>
-        <h1 className="font-serif-brand text-4xl mt-1">TSPL / ZPL Tag Generator</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-1">TSPL / ZPL Tag Generator</h1>
       </div>
 
       <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
@@ -124,7 +124,7 @@ export default function LabelPrint() {
               </pre>
             </div>
             <Button onClick={print} disabled={!item}
-              style={{ background: "var(--gold)", color: "#fff" }}
+              style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
               className="gap-2" data-testid="print-label-action-button">
               <Printer className="w-4 h-4" /> Download & send to printer
             </Button>
@@ -139,7 +139,7 @@ export default function LabelPrint() {
               data-testid="label-print-preview-canvas"
             >
               <div>
-                <div className="font-serif-brand text-2xl font-semibold text-neutral-900">
+                <div className="font-semibold tracking-tight text-2xl font-semibold text-neutral-900">
                   {item?.tag_id || "TAG-ID"}
                 </div>
                 <div className="text-[10px] uppercase tracking-widest text-neutral-500">

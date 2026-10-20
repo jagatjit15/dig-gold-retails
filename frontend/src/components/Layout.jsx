@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   Crown, LayoutDashboard, Package, ScanLine, ClipboardCheck,
-  Settings, Printer, ShieldCheck, Sun, Moon, LogOut,
+  Settings, Printer, ShieldCheck, Sun, Moon, LogOut, Receipt, FolderOpen, MessageCircle, Users,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -15,10 +15,14 @@ import { Badge } from "@/components/ui/badge";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, tid: "nav-dashboard" },
+  { to: "/billing", label: "Billing", icon: Receipt, tid: "nav-billing" },
   { to: "/inventory", label: "Inventory", icon: Package, tid: "nav-inventory" },
   { to: "/scan", label: "Scan Lookup", icon: ScanLine, tid: "nav-scan" },
   { to: "/audit", label: "Stock Audit", icon: ClipboardCheck, tid: "nav-audit" },
   { to: "/labels", label: "Label Print", icon: Printer, tid: "nav-labels" },
+  { to: "/documents", label: "Documents", icon: FolderOpen, tid: "nav-documents" },
+  { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle, tid: "nav-whatsapp" },
+  { to: "/staff", label: "Staff", icon: Users, tid: "nav-staff", roles: ["admin"] },
   { to: "/masters", label: "Masters & Rates", icon: Settings, tid: "nav-masters" },
   { to: "/audit-log", label: "Audit Log", icon: ShieldCheck, tid: "nav-audit-log" },
 ];
@@ -98,7 +102,7 @@ function TopBar() {
               <span className="text-xs uppercase tracking-widest"
                 style={{ color: "var(--text-muted)" }}>{r.label}</span>
               <span className="font-num text-sm font-semibold"
-                style={{ color: "var(--gold)" }}
+                style={{ color: "var(--gold-text)" }}
                 data-testid={r.tid}>
                 ₹{r.key ? r.key.rate_per_gram.toFixed(2) : "—"}
               </span>
@@ -116,7 +120,7 @@ function TopBar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 h-9" data-testid="user-menu-trigger">
               <div className="w-8 h-8 rounded-full flex items-center justify-center font-serif-brand text-sm"
-                style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
+                style={{ background: "var(--gold-soft)", color: "var(--gold-text)" }}>
                 {user?.name?.[0]?.toUpperCase() || "U"}
               </div>
               <div className="text-left hidden sm:block">
@@ -152,32 +156,33 @@ function Sidebar() {
       <div className="h-16 flex items-center gap-3 px-6 border-b"
         style={{ borderColor: "var(--border)" }}>
         <div className="w-9 h-9 rounded-md flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg,#B8860B,#D4AF37)" }}>
+          style={{ background: "var(--gold)" }}>
           <Crown className="w-5 h-5 text-white" />
         </div>
         <div>
           <div className="font-serif-brand text-xl leading-none">SwarnaERP</div>
-          <div className="text-[10px] uppercase tracking-[0.2em]"
+          <div className="text-[10px] uppercase tracking-[0.12em] whitespace-nowrap"
             style={{ color: "var(--text-muted)" }}>
             Jewellery Platform
           </div>
         </div>
       </div>
       <nav className="flex-1 p-3 space-y-1">
-        {NAV.map((n) => (
+        {NAV.filter((n) => !n.roles || n.roles.includes(user?.role)).map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
             end={n.end}
             data-testid={n.tid}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ${
-                isActive
-                  ? "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 font-medium"
-                  : "hover:bg-black/5 dark:hover:bg-white/5"
+              `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
+                isActive ? "font-semibold" : "hover:bg-black/5 dark:hover:bg-white/5"
               }`
             }
-            style={({ isActive }) => isActive ? { borderLeft: "2px solid var(--gold)" } : {}}
+            style={({ isActive }) => isActive ? {
+              borderLeft: "3px solid var(--primary)", color: "var(--primary)",
+              background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+            } : { color: "var(--text-2)" }}
           >
             <n.icon className="w-4 h-4" />
             <span>{n.label}</span>
@@ -190,7 +195,7 @@ function Sidebar() {
           style={{ borderColor: "var(--border)" }}>
           {user?.role?.toUpperCase()}
         </Badge>
-        <div className="mt-2">v0.1 · Phase 1</div>
+        <div className="mt-2">v0.2</div>
       </div>
     </aside>
   );

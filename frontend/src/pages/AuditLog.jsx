@@ -15,7 +15,7 @@ export default function AuditLog() {
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
           Security
         </p>
-        <h1 className="font-serif-brand text-4xl mt-1">Audit Log (Hash-Chained)</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-1">Audit Log (Hash-Chained)</h1>
       </div>
       <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
         <CardContent className="p-0">

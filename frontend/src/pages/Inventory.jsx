@@ -12,16 +12,22 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Paperclip, CheckCircle2, Receipt, Truck, Hammer, Ban, CircleDot } from "lucide-react";
+import { FileManager } from "@/components/FileManager";
+
+const STATUS_ICONS = {
+  in_stock: CheckCircle2, sold: Receipt, transferred: Truck,
+  in_transit: Truck, with_karigar: Hammer, scrapped: Ban,
+};
 import { toast } from "sonner";
 
 const STATUS_COLORS = {
-  in_stock: "#1B5E20",
-  sold: "#6E6259",
-  transferred: "#1565C0",
-  in_transit: "#E65100",
-  with_karigar: "#7A1C1C",
-  scrapped: "#C62828",
+  in_stock: "var(--success)",
+  sold: "var(--text-2)",
+  transferred: "var(--info)",
+  in_transit: "var(--warning)",
+  with_karigar: "var(--info)",
+  scrapped: "var(--danger)",
 };
 
 export default function Inventory() {
@@ -32,6 +38,7 @@ export default function Inventory() {
   const [cats, setCats] = useState([]);
   const [purities, setPurities] = useState([]);
   const [open, setOpen] = useState(false);
+  const [filesFor, setFilesFor] = useState(null);
 
   const load = () => {
     const params = new URLSearchParams();
@@ -62,7 +69,7 @@ export default function Inventory() {
           <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
             Tagged Inventory
           </p>
-          <h1 className="font-serif-brand text-4xl mt-1">Items & Stock Register</h1>
+          <h1 className="text-3xl font-semibold tracking-tight mt-1">Items & Stock Register</h1>
         </div>
         <AddItemDialog
           open={open} setOpen={setOpen}
@@ -122,12 +129,13 @@ export default function Inventory() {
                   <Th num>Stone (g)</Th>
                   <Th num>Net (g)</Th>
                   <Th>Status</Th>
+                  <Th>Files</Th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-16"
+                    <td colSpan={8} className="text-center py-16"
                       style={{ color: "var(--text-muted)" }}>
                       No items yet — add your first tagged item.
                     </td>
@@ -156,14 +164,21 @@ export default function Inventory() {
                       <Td>
                         <Badge
                           variant="outline"
-                          className="font-mono text-[10px] uppercase"
+                          className="text-[10px] uppercase gap-1"
                           style={{
                             borderColor: STATUS_COLORS[i.status],
                             color: STATUS_COLORS[i.status],
                           }}
                         >
+                          {React.createElement(STATUS_ICONS[i.status] || CircleDot, { className: "w-3 h-3" })}
                           {i.status.replace("_", " ")}
                         </Badge>
+                      </Td>
+                      <Td>
+                        <Button size="sm" variant="ghost" className="gap-1" onClick={() => setFilesFor(i)}
+                          data-testid={`item-files-button-${i.tag_id}`}>
+                          <Paperclip className="w-4 h-4" /> Files
+                        </Button>
                       </Td>
                     </tr>
                   );
@@ -173,6 +188,14 @@ export default function Inventory() {
           </div>
         </CardContent>
       </Card>
+      <Dialog open={Boolean(filesFor)} onOpenChange={(o) => !o && setFilesFor(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Photos & documents · <span className="font-mono">{filesFor?.tag_id}</span></DialogTitle>
+          </DialogHeader>
+          {filesFor && <FileManager ownerType="item" ownerId={filesFor.id} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -242,14 +265,14 @@ function AddItemDialog({ open, setOpen, cats, purities, branchId, onDone }) {
         <Button
           data-testid="add-tagged-item-button"
           className="gap-2"
-          style={{ background: "var(--gold)", color: "#fff" }}
+          style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
         >
           <Plus className="w-4 h-4" /> New Tagged Item
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="font-serif-brand text-2xl">New Tagged Item</DialogTitle>
+          <DialogTitle className="font-semibold tracking-tight text-2xl">New Tagged Item</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="grid grid-cols-2 gap-4">
           <Field label="Tag ID *">
@@ -314,7 +337,7 @@ function AddItemDialog({ open, setOpen, cats, purities, branchId, onDone }) {
           <DialogFooter className="col-span-2 mt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={busy}
-              style={{ background: "var(--gold)", color: "#fff" }}
+              style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
               data-testid="item-submit-button">
               {busy ? "Saving…" : "Add Item"}
             </Button>

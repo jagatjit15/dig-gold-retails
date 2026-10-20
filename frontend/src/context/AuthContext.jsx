@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     if (user) {
       api.get("/branches").then((r) => {
         setBranches(r.data);
-        if (!branchId) {
+        if (!branchId || !r.data.some((b) => b.id === branchId)) {
           const defaultBranch = user.branch_id || r.data[0]?.id || "";
           if (defaultBranch) setBranchId(defaultBranch);
         }

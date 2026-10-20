@@ -35,25 +35,25 @@ export default function Login() {
       style={{ background: "var(--bg)" }}
     >
       <div className="hidden lg:flex flex-1 flex-col justify-between p-16 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#1C1613 0%,#2A1F15 60%,#3D2A17 100%)" }}>
-        <div className="flex items-center gap-3 text-amber-100">
-          <Crown className="w-7 h-7" style={{ color: "#D4AF37" }} />
+        style={{ background: "#16263D" }}>
+        <div className="flex items-center gap-3 text-white">
+          <Crown className="w-7 h-7" style={{ color: "#D9AE55" }} />
           <span className="font-serif-brand text-2xl">SwarnaERP</span>
         </div>
-        <div className="text-amber-50 space-y-4 max-w-md">
-          <p className="uppercase tracking-[0.3em] text-xs text-amber-200/70">
+        <div className="text-white space-y-4 max-w-md">
+          <p className="uppercase tracking-[0.3em] text-xs text-white/60">
             Multi-branch Jewellery Platform
           </p>
           <h1 className="font-serif-brand text-5xl leading-[1.05]">
-            Precision for every <em style={{ color: "#D4AF37" }}>gram</em>,
-            trust in every <em style={{ color: "#D4AF37" }}>tag</em>.
+            Precision for every <em style={{ color: "#D9AE55" }}>gram</em>,
+            trust in every <em style={{ color: "#D9AE55" }}>tag</em>.
           </h1>
-          <p className="text-amber-100/70 text-sm leading-relaxed">
+          <p className="text-white/70 text-sm leading-relaxed">
             GST-compliant billing, append-only stock ledger, scan-driven audits,
             and branch-scoped RBAC — built for the Indian retail jeweller.
           </p>
         </div>
-        <div className="text-xs text-amber-100/40 font-mono">
+        <div className="text-xs text-white/40 font-mono">
           Phase 1 · Masters · Inventory · ScanService · Labels
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function Login() {
           style={{ borderColor: "var(--border)", background: "var(--card)" }}>
           <CardContent className="p-10 space-y-6">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-amber-700">
+              <div className="flex items-center gap-2 text-[var(--gold-text)]">
                 <Lock className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-widest">Sign In</span>
               </div>
@@ -98,7 +98,7 @@ export default function Login() {
                 type="submit"
                 disabled={busy}
                 className="w-full h-11 font-medium"
-                style={{ background: "var(--gold)", color: "#fff" }}
+                style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
                 data-testid="login-submit-button"
               >
                 {busy ? "Signing in…" : "Sign in"}

@@ -20,7 +20,7 @@ export default function Masters() {
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
           Settings
         </p>
-        <h1 className="font-serif-brand text-4xl mt-1">Masters & Rates</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-1">Masters & Rates</h1>
       </div>
       <Tabs defaultValue="rates">
         <TabsList>
@@ -74,7 +74,7 @@ function RatesTab() {
     <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
       <CardContent className="p-6 grid md:grid-cols-[1fr,320px] gap-6">
         <div>
-          <h3 className="font-serif-brand text-lg mb-3">Latest rates</h3>
+          <h3 className="font-semibold tracking-tight text-lg mb-3">Latest rates</h3>
           <div className="space-y-2">
             {rates.map((r) => (
               <div key={r.id}
@@ -87,7 +87,7 @@ function RatesTab() {
                     {r.metal} · {r.rate_date}
                   </div>
                 </div>
-                <div className="font-num text-xl" style={{ color: "var(--gold)" }}>
+                <div className="font-num text-xl" style={{ color: "var(--gold-text)" }}>
                   ₹{r.rate_per_gram.toFixed(2)}/g
                 </div>
               </div>
@@ -95,7 +95,7 @@ function RatesTab() {
           </div>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <h3 className="font-serif-brand text-lg">Update rate</h3>
+          <h3 className="font-semibold tracking-tight text-lg">Update rate</h3>
           <div>
             <Label>Metal</Label>
             <Select value={metal} onValueChange={setMetal}>
@@ -124,7 +124,7 @@ function RatesTab() {
               onChange={(e) => setPrice(e.target.value)}
               data-testid="rate-input" />
           </div>
-          <Button type="submit" style={{ background: "var(--gold)", color: "#fff" }}
+          <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
             className="w-full" data-testid="rate-update-button">
             Save new rate
           </Button>
@@ -154,7 +154,7 @@ function BranchesTab() {
     <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
       <CardContent className="p-6 grid md:grid-cols-[1fr,320px] gap-6">
         <div>
-          <h3 className="font-serif-brand text-lg mb-3">Branches</h3>
+          <h3 className="font-semibold tracking-tight text-lg mb-3">Branches</h3>
           <div className="space-y-2">
             {branches.map((b) => (
               <div key={b.id} className="p-3 rounded-md border flex items-start justify-between"
@@ -174,7 +174,7 @@ function BranchesTab() {
           </div>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <h3 className="font-serif-brand text-lg">Add branch</h3>
+          <h3 className="font-semibold tracking-tight text-lg">Add branch</h3>
           {[
             ["code", "Code *"], ["name", "Name *"], ["address", "Address"],
             ["gstin", "GSTIN"], ["state_code", "State Code"],
@@ -186,7 +186,7 @@ function BranchesTab() {
                 data-testid={`branch-${k}-input`} />
             </div>
           ))}
-          <Button type="submit" style={{ background: "var(--gold)", color: "#fff" }}
+          <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
             className="w-full" data-testid="branch-submit-button">
             Create branch
           </Button>

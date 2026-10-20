@@ -40,7 +40,7 @@ export default function Dashboard() {
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
           {current?.name || "Dashboard"}
         </p>
-        <h1 className="font-serif-brand text-4xl mt-1">
+        <h1 className="text-3xl font-semibold tracking-tight mt-1">
           Good day, {user?.name?.split(" ")[0]}.
         </h1>
       </div>
@@ -55,7 +55,7 @@ export default function Dashboard() {
               <div className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
                 Daily Rate Board
               </div>
-              <h2 className="font-serif-brand text-2xl mt-0.5">Today's Metal Rates</h2>
+              <h2 className="font-semibold tracking-tight text-2xl mt-0.5">Today's Metal Rates</h2>
             </div>
             <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
               per gram · INR
@@ -70,9 +70,9 @@ export default function Dashboard() {
                   style={{ color: "var(--text-muted)" }}>
                   {r.metal}
                 </div>
-                <div className="font-serif-brand text-xl mt-1">{r.purity_code}</div>
+                <div className="font-semibold tracking-tight text-xl mt-1">{r.purity_code}</div>
                 <div className="font-num text-2xl font-semibold mt-2"
-                  style={{ color: "var(--gold)" }}>
+                  style={{ color: "var(--gold-text)" }}>
                   ₹{r.rate_per_gram.toFixed(2)}
                 </div>
               </div>
@@ -117,7 +117,7 @@ function StatCard({ icon: Icon, label, value, mono, testId }) {
           {label}
         </div>
         <div
-          className={`mt-3 text-3xl font-semibold ${mono ? "font-num" : "font-serif-brand"}`}
+          className={`mt-3 text-3xl font-semibold ${mono ? "font-num" : "font-semibold tracking-tight"}`}
           data-testid={testId}
         >
           {value}

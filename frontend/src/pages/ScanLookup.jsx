@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScanLine, AlertTriangle, Check } from "lucide-react";
+import { CameraScanButton } from "@/components/CameraScanner";
 
 /* USB keyboard-wedge barcode & RFID scanners deliver characters to a focused
    input and submit on Enter. This page keeps the input focus-locked and
@@ -55,7 +56,7 @@ export default function ScanLookup() {
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--text-muted)" }}>
           Scan Service
         </p>
-        <h1 className="font-serif-brand text-4xl mt-1">Barcode & RFID Lookup</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-1">Barcode & RFID Lookup</h1>
       </div>
 
       <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
@@ -78,15 +79,16 @@ export default function ScanLookup() {
               data-testid="barcode-scan-input"
             />
             <div className="flex items-center gap-2">
-              <Button type="submit" style={{ background: "var(--gold)", color: "#fff" }}
+              <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
                 data-testid="scan-submit-button">
                 Lookup
               </Button>
-              <Button type="button" variant="outline"
+              <Button type="button" variant="outline" className="h-11"
                 onClick={() => inputRef.current?.focus()}
-                data-testid="camera-scan-trigger-button">
-                Focus scanner
+                data-testid="focus-scanner-button">
+                Focus USB scanner
               </Button>
+              <CameraScanButton onDetect={lookup} continuous />
               <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
                 Duplicates within 1.2s are ignored
               </span>
@@ -108,17 +110,17 @@ export default function ScanLookup() {
           <Card key={idx}
             style={{
               borderColor: h.found && (!h.warnings || h.warnings.length === 0)
-                ? "#1B5E20" : h.warnings?.length ? "#E65100" : "#C62828",
+                ? "var(--success)" : h.warnings?.length ? "var(--warning)" : "var(--danger)",
               background: "var(--card)",
             }}
             data-testid={`scan-result-${idx}`}>
             <CardContent className="p-4 flex items-start gap-4">
               <div className="pt-0.5">
                 {h.found && !h.warnings?.length ? (
-                  <Check className="w-5 h-5" style={{ color: "#1B5E20" }} />
+                  <Check className="w-5 h-5" style={{ color: "var(--success)" }} />
                 ) : (
                   <AlertTriangle className="w-5 h-5"
-                    style={{ color: h.warnings?.length ? "#E65100" : "#C62828" }} />
+                    style={{ color: h.warnings?.length ? "var(--warning)" : "var(--danger)" }} />
                 )}
               </div>
               <div className="flex-1">
@@ -142,7 +144,7 @@ export default function ScanLookup() {
                   </div>
                 )}
                 {h.warnings?.map((w, i) => (
-                  <div key={i} className="mt-1 text-xs" style={{ color: "#E65100" }}>
+                  <div key={i} className="mt-1 text-xs" style={{ color: "var(--warning)" }}>
                     ⚠ {w}
                   </div>
                 ))}

@@ -145,7 +145,7 @@ async def scan_lookup(code: str, user: UserPublic = Depends(get_current_user)):
         warnings.append(f"Item status is {item_doc['status']}")
     if user.role != "admin" and user.branch_id and \
        item_doc["branch_id"] != user.branch_id:
-        warnings.append("Item belongs to a different branch")
+        return ScanLookupResponse(found=False, warnings=["Item belongs to another branch"])
     return ScanLookupResponse(found=True, item=Item(**item_doc), warnings=warnings)
 
 

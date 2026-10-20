@@ -7,6 +7,14 @@ export const api = axios.create({
   baseURL: API_BASE,
 });
 
+export function errMsg(err, fallback = "Something went wrong") {
+  const d = err?.response?.data?.detail;
+  if (!d) return fallback;
+  if (typeof d === "string") return d;
+  if (Array.isArray(d)) return d.map((e) => e?.msg || JSON.stringify(e)).join(" ");
+  return d.msg || String(d);
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("swarna_access");
   if (token) {

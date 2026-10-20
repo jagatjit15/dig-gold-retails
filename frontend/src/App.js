@@ -13,6 +13,10 @@ import StockAudit from "@/pages/StockAudit";
 import LabelPrint from "@/pages/LabelPrint";
 import AuditLog from "@/pages/AuditLog";
 import ScanLookup from "@/pages/ScanLookup";
+import Documents from "@/pages/Documents";
+import Billing from "@/pages/Billing";
+import Staff from "@/pages/Staff";
+import WhatsApp from "@/pages/WhatsApp";
 
 function Protected({ children }) {
   const { user } = useAuth();
@@ -50,6 +54,10 @@ function App() {
             <Route path="masters" element={<Masters />} />
             <Route path="labels" element={<LabelPrint />} />
             <Route path="audit-log" element={<AuditLog />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="billing" element={<Billing />} />
+            <Route path="staff" element={<Staff />} />
+            <Route path="whatsapp" element={<WhatsApp />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

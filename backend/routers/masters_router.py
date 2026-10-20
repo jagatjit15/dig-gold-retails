@@ -18,8 +18,9 @@ router = APIRouter(tags=["masters"])
 
 # ---- Branches ----
 @router.get("/branches", response_model=List[Branch])
-async def list_branches(_: UserPublic = Depends(get_current_user)):
-    docs = await db.branches.find({}, {"_id": 0}).to_list(500)
+async def list_branches(user: UserPublic = Depends(get_current_user)):
+    q = {} if user.role == "admin" else {"id": user.branch_id}
+    docs = await db.branches.find(q, {"_id": 0}).to_list(500)
     return [Branch(**d) for d in docs]
 
 
