@@ -18,9 +18,10 @@ import Billing from "@/pages/Billing";
 import Staff from "@/pages/Staff";
 import WhatsApp from "@/pages/WhatsApp";
 
-function Protected({ children }) {
+function Protected({ children, roles }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -56,7 +57,7 @@ function App() {
             <Route path="audit-log" element={<AuditLog />} />
             <Route path="documents" element={<Documents />} />
             <Route path="billing" element={<Billing />} />
-            <Route path="staff" element={<Staff />} />
+            <Route path="staff" element={<Protected roles={["admin"]}><Staff /></Protected>} />
             <Route path="whatsapp" element={<WhatsApp />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

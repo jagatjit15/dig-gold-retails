@@ -1,0 +1,51 @@
+{
+  "summary": "Phase-2 end-to-end test of files (Emergent object storage), scan-to-bill with GST and PDF invoice, mock WhatsApp, staff/auth lifecycle, branch scoping, camera dialogs and theme. Backend: 17/17 pytest passed. This covers the 25 MB limit (backend returns 413; a 20 MB upload and its download go through the ingress fine) and a concurrency test where 5 parallel bills for one item gave exactly 1x200 and 4x409. Frontend: every requested flow passed in Playwright. These are login, the sidebar nav, the Inventory Files dialog (upload, image thumbnail, download, delete), the Documents library and the Billing counter. The Billing check covered scan + Enter, making-charge edits updating CGST/SGST, state code 29 switching to IGST, bill ZB-MAIN-00004, the PDF download, a re-scan of the sold item being rejected and the item showing SOLD in Inventory. Also passed: the Staff page (create, deactivate, reactivate), the WhatsApp broadcast (2 valid numbers recorded, invalid skipped), the billing user's scoping (MG Road Store only, no Staff nav, no broadcast form, no delete buttons), camera dialogs on Billing, Scan Lookup and Stock Audit, a readable camera-error when getUserMedia is denied, and the light/dark toggle. No critical bugs found; only minor issues.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/auth/users", "issue": "Allowed for the manager role and returns users from ALL branches, including emails and roles of other branches. If managers should only see their own staff, filter by branch."},
+      {"endpoint": "POST /api/auth/login", "issue": "Tokens come back in the JSON body and are stored in localStorage. No httpOnly auth cookie is set, which deviates from the auth playbook. CORS_ORIGINS='*' is combined with allow_credentials=True. This is a design note, not a blocker."},
+      {"endpoint": "POST /api/files", "issue": "Reads the whole file into memory with `await file.read()` before checking the 25 MB size. Acceptable at 25 MB, but checking file.size first or streaming in chunks would protect memory."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "App.js routes / Staff page", "issue": "The /staff route has no role guard. A billing user who opens /staff directly sees the Staff page with an active 'New staff' button. The backend still returns 403, so nothing leaks, but the page should redirect non-admins.", "selector": "[data-testid='add-staff-button']", "priority": "LOW"},
+      {"component": "ScanLookup result card", "issue": "For an item from another branch the card shows 'Item not found in database.' together with '⚠ Item belongs to another branch'. The two messages contradict each other; show only the branch warning when that is the reason.", "selector": "[data-testid^='scan-result-']", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "File download / PDF download", "issue": "FileManager.download and Billing.openPdf have no try/catch, so a failed download gives no toast and an unhandled promise rejection. FileManager also calls revokeObjectURL right after a.click(), which can cancel the download in Safari/Firefox; Billing waits 2 s before revoking, which is safer.", "affected_selectors": ["[data-testid^='file-download-']", "[data-testid='generate-gst-pdf-invoice-button']"]}
+    ],
+    "design_issues": [
+      {"screen": "PDF invoice", "issues": ["The invoice uses ReportLab Times-Bold and Helvetica, not Cormorant Garamond as the theme spec asks for brand/invoice. Embedding the TTF would match the spec."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2_billing_files_whatsapp_staff.py",
+    "/app/backend/tests/test_phase2_edge.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Add a role guard for /staff in App.js so non-admins are redirected.",
+    "Scan Lookup: hide 'Item not found in database.' when the warning is 'Item belongs to another branch'.",
+    "Add error handling to file and PDF downloads; delay revokeObjectURL in FileManager.",
+    "Optional: limit GET /api/auth/users for managers to their own branch.",
+    "Optional: embed Cormorant Garamond in invoice_pdf.py."
+  ],
+  "critical_code_review_comments": [
+    "billing_router: the 'already sold' check plus the atomic update_one({status:'in_stock'}) with rollback is correct, and the concurrency test confirmed it.",
+    "billing_router: a bill with an item from another branch returns 400. The spec says 'rejects', so this is acceptable; 403 would match other scope errors better.",
+    "whatsapp broadcast: invalid_skipped counts raw invalid entries, including duplicates. Fine.",
+    "auth: brute-force lockout is keyed on IP+email; after the lock expires, the next failure resets the count to 1. Works as intended."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2_billing_files_whatsapp_staff.py",
+    "/app/backend/tests/test_phase2_edge.py"
+  ],
+  "success_rate": {"backend": "100% (17/17)", "frontend": "100% of requested flows; 2 low-priority UX issues"},
+  "test_credentials": "Used /app/memory/test_credentials.md: admin, counter.blr and manager.zb all work. bcrypt hashes start with $2b$.",
+  "seed_data_creation": "Created TEST-* items in ZB-MAIN and MG-BLR (several now SOLD on bills ZB-MAIN-00002..00004), TEST-UI-FILE1 with a TEST_photo2.png attachment, and a TEST_gst_cert.pdf branch document. Created test users test_billzb_*, test_life_* (now a manager on MG-BLR, password NewPass@99) and test_ui_staff_* (all active). Added mocked WhatsApp outbox rows. Seeded users were not modified; TAG-1792485619 is still in stock.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run the tests with: cd /app/backend && REACT_APP_BACKEND_URL=<url> python -m pytest tests/ (pytest.ini uses xdist). Each run creates new TEST-* items and users with a random RUN suffix. Brute-force tests use throwaway emails. Headless Chromium has a fake camera; to test the error path, override navigator.mediaDevices with add_init_script."
+}

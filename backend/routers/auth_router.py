@@ -91,8 +91,9 @@ async def me(user: UserPublic = Depends(get_current_user)):
 
 
 @router.get("/users", response_model=List[UserPublic])
-async def list_users(_: UserPublic = Depends(require_roles("admin", "manager"))):
-    docs = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(500)
+async def list_users(user: UserPublic = Depends(require_roles("admin", "manager"))):
+    q = {} if user.role == "admin" else {"branch_id": user.branch_id}
+    docs = await db.users.find(q, {"_id": 0, "password_hash": 0}).to_list(500)
     return [UserPublic(**d) for d in docs]
 
 

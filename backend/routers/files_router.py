@@ -50,6 +50,8 @@ async def upload_file(
 ):
     branch_id = await _owner_branch(owner_type, owner_id)
     enforce_branch(user, branch_id)
+    if file.size is not None and file.size > MAX_BYTES:
+        raise HTTPException(413, "File exceeds 25 MB")
     data = await file.read()
     if not data:
         raise HTTPException(400, "Empty file")

@@ -138,7 +138,7 @@ export default function ScanLookup() {
                     <Kv label="Gross" mono>{h.item.gross_wt.toFixed(3)} g</Kv>
                     <Kv label="Net" mono>{h.item.net_wt.toFixed(3)} g</Kv>
                   </div>
-                ) : (
+                ) : !h.warnings?.length && (
                   <div className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>
                     Item not found in database.
                   </div>

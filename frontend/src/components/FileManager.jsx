@@ -68,11 +68,15 @@ export function FileManager({ ownerType, ownerId, category }) {
   };
 
   const download = async (f) => {
-    const r = await api.get(`/files/${f.id}/download`, { responseType: "blob" });
-    const url = URL.createObjectURL(r.data);
-    const a = document.createElement("a");
-    a.href = url; a.download = f.original_filename; a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const r = await api.get(`/files/${f.id}/download`, { responseType: "blob" });
+      const url = URL.createObjectURL(r.data);
+      const a = document.createElement("a");
+      a.href = url; a.download = f.original_filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (_e) {
+      toast.error("Download failed");
+    }
   };
 
   const remove = async (f) => {

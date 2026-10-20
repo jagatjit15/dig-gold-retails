@@ -14,11 +14,15 @@ const inr = (n) => (Number(n) < 0 ? "-" : "") + "₹" + Math.abs(Number(n || 0))
 const primary = { background: "var(--primary)", color: "var(--primary-fg)" };
 
 async function openPdf(bill) {
-  const r = await api.get(`/bills/${bill.id}/pdf`, { responseType: "blob" });
-  const url = URL.createObjectURL(r.data);
-  const a = document.createElement("a");
-  a.href = url; a.download = `${bill.bill_no}.pdf`; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  try {
+    const r = await api.get(`/bills/${bill.id}/pdf`, { responseType: "blob" });
+    const url = URL.createObjectURL(r.data);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${bill.bill_no}.pdf`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (_e) {
+    toast.error("Could not download the invoice PDF");
+  }
 }
 
 async function sendWa(bill, after) {

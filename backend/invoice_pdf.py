@@ -1,11 +1,17 @@
 """Black-and-white friendly GST tax invoice PDF (ReportLab)."""
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+pdfmetrics.registerFont(TTFont("Cormorant-Bold",
+                               str(Path(__file__).parent / "fonts" / "CormorantGaramond-Bold.ttf")))
 
 ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
         "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
@@ -55,8 +61,8 @@ def build_invoice_pdf(bill: dict, branch: dict) -> bytes:
                             title=f"Tax Invoice {bill['bill_no']}")
     s = ParagraphStyle("s", fontName="Helvetica", fontSize=8.5, leading=11)
     sb = ParagraphStyle("sb", parent=s, fontName="Helvetica-Bold")
-    shop = ParagraphStyle("shop", fontName="Times-Bold", fontSize=20, leading=24)
-    title = ParagraphStyle("t", fontName="Times-Bold", fontSize=13, leading=16, alignment=2)
+    shop = ParagraphStyle("shop", fontName="Cormorant-Bold", fontSize=22, leading=26)
+    title = ParagraphStyle("t", fontName="Cormorant-Bold", fontSize=15, leading=18, alignment=2)
     grid = [("GRID", (0, 0), (-1, -1), 0.5, colors.black)]
     inter = bill.get("igst", 0) > 0
     created = datetime.fromisoformat(bill["created_at"]).strftime("%d-%m-%Y %H:%M")
