@@ -97,7 +97,7 @@ export function FileManager({ ownerType, ownerId, category }) {
           <input ref={input} type="file" multiple className="hidden"
             onChange={(e) => upload(e.target.files)} data-testid="file-upload-input" />
           <Button onClick={() => input.current?.click()} disabled={busy} className="gap-2"
-            style={{ background: "var(--primary)", color: "var(--primary-fg)" }} data-testid="file-upload-button">
+            style={{ background: "var(--brand)", color: "var(--brand-fg)" }} data-testid="file-upload-button">
             <Upload className="w-4 h-4" /> {busy ? "Uploading…" : "Upload files"}
           </Button>
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -111,7 +111,7 @@ export function FileManager({ ownerType, ownerId, category }) {
       )}
       {files.map((f) => (
         <div key={f.id} className="flex items-center gap-3 p-2 rounded-md border"
-          style={{ borderColor: "var(--border)" }} data-testid={`file-row-${f.id}`}>
+          style={{ borderColor: "var(--line)" }} data-testid={`file-row-${f.id}`}>
           <Thumb file={f} />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium truncate">{f.original_filename}</div>

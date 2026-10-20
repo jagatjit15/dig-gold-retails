@@ -59,7 +59,7 @@ export default function ScanLookup() {
         <h1 className="text-3xl font-semibold tracking-tight mt-1">Barcode & RFID Lookup</h1>
       </div>
 
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-6">
           <form onSubmit={onSubmit} className="space-y-3">
             <label className="text-xs uppercase tracking-widest flex items-center gap-2"
@@ -79,7 +79,7 @@ export default function ScanLookup() {
               data-testid="barcode-scan-input"
             />
             <div className="flex items-center gap-2">
-              <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+              <Button type="submit" style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
                 data-testid="scan-submit-button">
                 Lookup
               </Button>
@@ -111,7 +111,7 @@ export default function ScanLookup() {
             style={{
               borderColor: h.found && (!h.warnings || h.warnings.length === 0)
                 ? "var(--success)" : h.warnings?.length ? "var(--warning)" : "var(--danger)",
-              background: "var(--card)",
+              background: "var(--panel)",
             }}
             data-testid={`scan-result-${idx}`}>
             <CardContent className="p-4 flex items-start gap-4">
@@ -127,7 +127,7 @@ export default function ScanLookup() {
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-sm font-semibold">{h.code}</span>
                   <Badge variant="outline" className="text-[10px] uppercase font-mono"
-                    style={{ borderColor: "var(--border)" }}>
+                    style={{ borderColor: "var(--line)" }}>
                     {h.at.toLocaleTimeString()}
                   </Badge>
                 </div>

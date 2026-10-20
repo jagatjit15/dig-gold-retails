@@ -17,7 +17,7 @@ const ROLES = [
   { v: "billing", l: "Billing / counter" },
   { v: "auditor", l: "Auditor" },
 ];
-const primary = { background: "var(--primary)", color: "var(--primary-fg)" };
+const primary = { background: "var(--brand)", color: "var(--brand-fg)" };
 
 function StaffDialog({ open, onClose, staff, branches, onSaved }) {
   const editing = Boolean(staff);
@@ -128,7 +128,7 @@ export default function Staff() {
           <UserPlus className="w-4 h-4" /> New staff
         </Button>
       </div>
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-sm" data-testid="staff-table">
             <thead className="text-left text-[11px] uppercase tracking-widest" style={{ color: "var(--text-muted)", background: "var(--surface)" }}>
@@ -136,7 +136,7 @@ export default function Staff() {
             </thead>
             <tbody>
               {list.map((s) => (
-                <tr key={s.id} className="border-t" style={{ borderColor: "var(--border)" }} data-testid={`staff-row-${s.email}`}>
+                <tr key={s.id} className="border-t" style={{ borderColor: "var(--line)" }} data-testid={`staff-row-${s.email}`}>
                   <td className="px-4 py-3"><div className="font-medium">{s.name}</div><div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{s.email}</div></td>
                   <td className="px-4 py-3"><Badge variant="outline" className="uppercase text-[10px]">{s.role}</Badge></td>
                   <td className="px-4 py-3">{bname(s.branch_id)}</td>

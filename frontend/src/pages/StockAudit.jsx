@@ -73,7 +73,7 @@ export default function StockAudit() {
       </div>
 
       {!session && (
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <h2 className="font-semibold tracking-tight text-xl">Start a new audit session</h2>
@@ -82,7 +82,7 @@ export default function StockAudit() {
                 appear in the variance report for manager approval.
               </p>
             </div>
-            <Button onClick={start} style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+            <Button onClick={start} style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
               data-testid="start-audit-button">
               Start audit
             </Button>
@@ -92,7 +92,7 @@ export default function StockAudit() {
 
       {session && (
         <>
-          <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -118,7 +118,7 @@ export default function StockAudit() {
                 />
                 <CameraScanButton onDetect={submitCode} continuous testId="audit-camera-scan-button" />
                 <Button type="submit" className="h-12"
-                  style={{ background: "var(--primary)", color: "var(--primary-fg)" }}>Add scan</Button>
+                  style={{ background: "var(--brand)", color: "var(--brand-fg)" }}>Add scan</Button>
               </form>
             </CardContent>
           </Card>
@@ -139,7 +139,7 @@ export default function StockAudit() {
           )}
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+            <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
               <CardContent className="p-5 space-y-3">
                 <h3 className="font-semibold tracking-tight text-lg">Recent scans</h3>
                 {scans.length === 0 && (
@@ -164,7 +164,7 @@ export default function StockAudit() {
                 })}
               </CardContent>
             </Card>
-            <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+            <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
               <CardContent className="p-5 space-y-3">
                 <h3 className="font-semibold tracking-tight text-lg">Missing items</h3>
                 {!variance || variance.missing.length === 0 ? (
@@ -191,7 +191,7 @@ export default function StockAudit() {
 
 function VarCard({ label, value, color, testId }) {
   return (
-    <Card style={{ borderColor: color || "var(--border)", background: "var(--card)" }}>
+    <Card style={{ borderColor: color || "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-5">
         <div className="text-xs uppercase tracking-widest"
           style={{ color: "var(--text-muted)" }}>{label}</div>

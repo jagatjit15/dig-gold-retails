@@ -47,14 +47,14 @@ export default function WhatsApp() {
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>Invoices go out automatically when a bill has a phone number. Use broadcasts for new launches.</p>
       </div>
       {status?.mocked && (
-        <div className="flex items-start gap-3 p-4 rounded-md border" style={{ borderColor: "var(--warning)", background: "var(--card)" }} data-testid="whatsapp-mock-banner">
+        <div className="flex items-start gap-3 p-4 rounded-md border" style={{ borderColor: "var(--warning)", background: "var(--panel)" }} data-testid="whatsapp-mock-banner">
           <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: "var(--warning)" }} />
           <div className="text-sm"><b>No WhatsApp provider connected yet.</b> Messages are only recorded in the outbox below and are not delivered.
             Your tech team can plug a provider into <span className="font-mono">backend/whatsapp.py</span> and set <span className="font-mono">WHATSAPP_PROVIDER</span>.</div>
         </div>
       )}
       <div className="grid lg:grid-cols-[420px,1fr] gap-6">
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-6">
             {canBroadcast ? (
               <form onSubmit={send} className="space-y-4">
@@ -69,14 +69,14 @@ export default function WhatsApp() {
                   <div><Label>Phone numbers (comma or new line)</Label>
                     <Textarea rows={3} value={phones} onChange={(e) => setPhones(e.target.value)} data-testid="broadcast-phones-input" /></div>
                 )}
-                <Button type="submit" disabled={busy} className="w-full h-11 gap-2" style={{ background: "var(--primary)", color: "var(--primary-fg)" }} data-testid="broadcast-send-button">
+                <Button type="submit" disabled={busy} className="w-full h-11 gap-2" style={{ background: "var(--brand)", color: "var(--brand-fg)" }} data-testid="broadcast-send-button">
                   <Send className="w-4 h-4" /> {busy ? "Sending…" : "Send broadcast"}
                 </Button>
               </form>
             ) : <p className="text-sm" style={{ color: "var(--text-2)" }}>Only managers and admins can send broadcasts.</p>}
           </CardContent>
         </Card>
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-sm" data-testid="whatsapp-outbox-table">
               <thead className="text-left text-[11px] uppercase tracking-widest" style={{ color: "var(--text-muted)", background: "var(--surface)" }}>
@@ -85,7 +85,7 @@ export default function WhatsApp() {
               <tbody>
                 {msgs.length === 0 && <tr><td colSpan={5} className="text-center py-10" style={{ color: "var(--text-muted)" }}>Outbox is empty.</td></tr>}
                 {msgs.map((m) => (
-                  <tr key={m.id} className="border-t align-top" style={{ borderColor: "var(--border)" }}>
+                  <tr key={m.id} className="border-t align-top" style={{ borderColor: "var(--line)" }}>
                     <td className="px-4 py-2 text-xs whitespace-nowrap">{new Date(m.created_at).toLocaleString()}</td>
                     <td className="px-4 py-2 capitalize">{m.kind}</td>
                     <td className="px-4 py-2 font-mono text-xs">{m.to}</td>

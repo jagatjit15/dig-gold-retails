@@ -7,14 +7,14 @@
 :root {
   --bg: #faf8f5;
   --surface: #f3f0ea;
-  --card: #ffffff;
-  --border: #e7e2d9;
-  --border-focus: #1f3a5f;
+  --panel: #ffffff;
+  --line: #e7e2d9;
+  --line-focus: #1f3a5f;
   --text: #1f2430;
   --text-2: #5f6672;
   --text-muted: #6b717c;
-  --primary: #1f3a5f;
-  --primary-fg: #ffffff;
+  --brand: #1f3a5f;
+  --brand-fg: #ffffff;
   --gold: #b8892b;
   --gold-text: #8a6414;
   --gold-soft: #f6eedc;
@@ -27,14 +27,14 @@
 .dark {
   --bg: #14161a;
   --surface: #191b20;
-  --card: #1d2026;
-  --border: #2e333b;
-  --border-focus: #7fa6d6;
+  --panel: #1d2026;
+  --line: #2e333b;
+  --line-focus: #7fa6d6;
   --text: #ece8e1;
   --text-2: #a5abb5;
   --text-muted: #8e949e;
-  --primary: #7fa6d6;
-  --primary-fg: #14161a;
+  --brand: #7fa6d6;
+  --brand-fg: #14161a;
   --gold: #d9ae55;
   --gold-text: #d9ae55;
   --gold-soft: #2a2516;

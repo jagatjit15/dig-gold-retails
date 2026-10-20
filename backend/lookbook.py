@@ -58,8 +58,10 @@ def build_card(title: str, subtitle: Optional[str], branch_name: str, footer: st
         ph = ch - text_h
         if t.get("photo"):
             try:
-                photo = ImageOps.fit(Image.open(BytesIO(t["photo"])).convert("RGB"), (cw - 4, ph - 2))
-                img.paste(photo, (x + 2, y + 2))
+                src = Image.open(BytesIO(t["photo"])).convert("RGB")
+                photo = ImageOps.contain(src, (cw - 4, ph - 2))
+                d.rectangle([x + 2, y + 2, x + cw - 2, y + ph], fill="#FFFFFF")
+                img.paste(photo, (x + 2 + (cw - 4 - photo.width) // 2, y + 2 + (ph - 2 - photo.height) // 2))
             except Exception:
                 t["photo"] = None
         if not t.get("photo"):
@@ -68,7 +70,8 @@ def build_card(title: str, subtitle: Optional[str], branch_name: str, footer: st
         d.line([x, y + ph, x + cw, y + ph], fill=GOLD, width=3)
         ty = y + ph + 12
         d.text((x + 20, ty), _fit(d, t["name"], f_name, cw - 40), font=f_name, fill=INK)
-        d.text((x + 20, ty + 42), _fit(d, t["detail"], f_det, cw - 40), font=f_det, fill=MUTED)
+        price_w = d.textlength(t["price"], font=f_price)
+        d.text((x + 20, ty + 42), _fit(d, t["detail"], f_det, cw - 60 - price_w), font=f_det, fill=MUTED)
         d.text((x + cw - 20, ty + 40), t["price"], font=f_price, fill=NAVY, anchor="ra")
 
     d.rectangle([0, H - 90, W, H], fill=NAVY)

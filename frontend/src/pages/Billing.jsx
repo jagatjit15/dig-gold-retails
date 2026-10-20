@@ -12,7 +12,7 @@ import { X, FileDown, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const inr = (n) => (Number(n) < 0 ? "-" : "") + "₹" + Math.abs(Number(n || 0)).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const primary = { background: "var(--primary)", color: "var(--primary-fg)" };
+const primary = { background: "var(--brand)", color: "var(--brand-fg)" };
 
 async function openPdf(bill) {
   try {
@@ -38,7 +38,7 @@ function Line({ item, line, override, setOverride, remove }) {
   const mt = override?.making_charge_type ?? item.making_charge_type;
   const mv = override?.making_charge_value ?? item.making_charge_value;
   return (
-    <div className="p-3 rounded-md border space-y-2" style={{ borderColor: "var(--border)" }} data-testid={`billing-line-${item.tag_id}`}>
+    <div className="p-3 rounded-md border space-y-2" style={{ borderColor: "var(--line)" }} data-testid={`billing-line-${item.tag_id}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="font-mono font-semibold">{item.tag_id}</div>
@@ -74,7 +74,7 @@ function Line({ item, line, override, setOverride, remove }) {
 
 function Totals({ q }) {
   const row = (l, v, tid, bold) => (
-    <div className={`flex justify-between ${bold ? "text-lg font-semibold pt-2 border-t" : ""}`} style={{ borderColor: "var(--border)" }}>
+    <div className={`flex justify-between ${bold ? "text-lg font-semibold pt-2 border-t" : ""}`} style={{ borderColor: "var(--line)" }}>
       <span>{l}</span><span className="font-num" data-testid={tid}>{inr(v)}</span>
     </div>
   );
@@ -97,12 +97,12 @@ function Totals({ q }) {
 
 function BillHistory({ bills, reload }) {
   return (
-    <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-5 space-y-2">
         <h3 className="font-semibold">Recent bills</h3>
         {bills.length === 0 && <div className="text-sm" style={{ color: "var(--text-muted)" }}>No bills yet.</div>}
         {bills.map((b) => (
-          <div key={b.id} className="flex items-center gap-2 text-sm border-t pt-2" style={{ borderColor: "var(--border)" }} data-testid={`bill-row-${b.bill_no}`}>
+          <div key={b.id} className="flex items-center gap-2 text-sm border-t pt-2" style={{ borderColor: "var(--line)" }} data-testid={`bill-row-${b.bill_no}`}>
             <div className="flex-1 min-w-0">
               <div className="font-mono font-semibold">{b.bill_no}</div>
               <div className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{b.customer_name} · {b.lines.map((l) => l.tag_id).join(", ")}</div>
@@ -187,7 +187,7 @@ export default function Billing() {
       </div>
       <div className="grid xl:grid-cols-[1fr,400px] gap-6">
         <div className="space-y-6">
-          <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
             <CardContent className="p-6 space-y-3">
               <form onSubmit={(e) => { e.preventDefault(); addCode(code); setCode(""); }} className="flex gap-2">
                 <Input ref={inputRef} autoFocus value={code} onChange={(e) => setCode(e.target.value)}
@@ -203,7 +203,7 @@ export default function Billing() {
               ))}
             </CardContent>
           </Card>
-          <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
             <CardContent className="p-6 grid sm:grid-cols-2 gap-3">
               <div><Label>Customer name *</Label><Input className="h-11" value={cust.name} onChange={setC("name")} data-testid="billing-customer-name-input" /></div>
               <div><Label>WhatsApp / phone</Label><Input className="h-11" value={cust.phone} onChange={setC("phone")} placeholder="10-digit mobile" data-testid="billing-customer-phone-input" /></div>
@@ -220,7 +220,7 @@ export default function Billing() {
           <OldGoldCard entries={oldGold} setEntries={setOldGold} priced={quote?.old_gold} />
         </div>
         <div className="space-y-6">
-          <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
             <CardContent className="p-6 space-y-4">
               <h3 className="font-semibold">Bill summary</h3>
               {quote ? <Totals q={quote} /> : <div className="text-sm" style={{ color: "var(--text-muted)" }}>Scan items to see totals.</div>}

@@ -17,7 +17,7 @@ export default function Documents() {
           Purchase bills, KYC, licences and other files for this branch.
         </p>
       </div>
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-6">
           {branchId ? <FileManager ownerType="branch" ownerId={branchId} /> : "Select a branch"}
         </CardContent>

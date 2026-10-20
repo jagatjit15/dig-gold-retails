@@ -51,7 +51,13 @@ def amount_in_words(x: float) -> str:
 
 
 def _m(v: float) -> str:
-    return f"{v:,.2f}"
+    neg, v = v < 0, abs(v)
+    whole, frac = f"{v:.2f}".split(".")
+    if len(whole) > 3:
+        head, tail = whole[:-3], whole[-3:]
+        head = ",".join([head[max(0, i - 2):i] for i in range(len(head), 0, -2)][::-1])
+        whole = f"{head},{tail}"
+    return f"{'-' if neg else ''}{whole}.{frac}"
 
 
 def build_invoice_pdf(bill: dict, branch: dict) -> bytes:

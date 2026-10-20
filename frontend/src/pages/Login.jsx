@@ -59,7 +59,7 @@ export default function Login() {
       </div>
       <div className="flex-1 flex items-center justify-center p-6">
         <Card className="w-full max-w-md border shadow-sm"
-          style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-10 space-y-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-[var(--gold-text)]">
@@ -98,7 +98,7 @@ export default function Login() {
                 type="submit"
                 disabled={busy}
                 className="w-full h-11 font-medium"
-                style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+                style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
                 data-testid="login-submit-button"
               >
                 {busy ? "Signing in…" : "Sign in"}

@@ -76,7 +76,7 @@ export default function LabelPrint() {
         <h1 className="text-3xl font-semibold tracking-tight mt-1">TSPL / ZPL Tag Generator</h1>
       </div>
 
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-6 grid md:grid-cols-[1fr,340px] gap-6">
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -116,7 +116,7 @@ export default function LabelPrint() {
                 style={{
                   background: "var(--surface)",
                   color: "var(--text)",
-                  border: "1px solid var(--border)",
+                  border: "1px solid var(--line)",
                 }}
                 data-testid="label-payload-preview"
               >
@@ -124,7 +124,7 @@ export default function LabelPrint() {
               </pre>
             </div>
             <Button onClick={print} disabled={!item}
-              style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+              style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
               className="gap-2" data-testid="print-label-action-button">
               <Printer className="w-4 h-4" /> Download & send to printer
             </Button>
@@ -135,7 +135,7 @@ export default function LabelPrint() {
               style={{ color: "var(--text-muted)" }}>Live tag preview</label>
             <div
               className="mt-1 rounded-md p-4 border aspect-[2/1] flex flex-col justify-between"
-              style={{ background: "#FFFBEF", borderColor: "var(--border)" }}
+              style={{ background: "#FFFBEF", borderColor: "var(--line)" }}
               data-testid="label-print-preview-canvas"
             >
               <div>

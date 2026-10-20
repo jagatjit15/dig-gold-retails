@@ -48,10 +48,13 @@ async def _photo(item_id: str) -> Optional[bytes]:
 async def create_card(body: CardCreate, user: UserPublic = Depends(managers)):
     enforce_branch(user, body.branch_id)
     branch = await db.branches.find_one({"id": body.branch_id}, {"_id": 0})
+    if not body.title.strip():
+        raise HTTPException(400, "Title is required")
     ids = list(dict.fromkeys(body.item_ids))
-    items = await db.items.find({"id": {"$in": ids}, "branch_id": body.branch_id}, {"_id": 0}).to_list(6)
+    items = await db.items.find({"id": {"$in": ids}, "branch_id": body.branch_id,
+                                 "status": "in_stock"}, {"_id": 0}).to_list(6)
     if len(items) != len(ids):
-        raise HTTPException(400, "Items must exist in this branch")
+        raise HTTPException(400, "Items must be in stock in this branch")
     items.sort(key=lambda i: ids.index(i["id"]))
     lines = await _price_lines(items, {})
     cats = {c["id"]: c["name"] for c in await db.categories.find({}, {"_id": 0}).to_list(500)}
@@ -80,6 +83,14 @@ async def create_card(body: CardCreate, user: UserPublic = Depends(managers)):
     await log_event("lookbook", "create", entity_id=card["id"], user_id=user.id,
                     branch_id=body.branch_id, diff={"title": body.title, "items": len(ids)})
     return card
+
+
+@router.get("/photo-items")
+async def items_with_photos(branch_id: str, user: UserPublic = Depends(get_current_user)):
+    enforce_branch(user, branch_id)
+    return await db.files.distinct("owner_id", {"owner_type": "item", "branch_id": branch_id,
+                                                "is_deleted": False,
+                                                "content_type": {"$regex": "^image/"}})
 
 
 @router.get("")

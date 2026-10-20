@@ -17,7 +17,7 @@ export default function AuditLog() {
         </p>
         <h1 className="text-3xl font-semibold tracking-tight mt-1">Audit Log (Hash-Chained)</h1>
       </div>
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead
@@ -34,7 +34,7 @@ export default function AuditLog() {
             </thead>
             <tbody>
               {entries.map((e) => (
-                <tr key={e.id} className="border-t" style={{ borderColor: "var(--border)" }}>
+                <tr key={e.id} className="border-t" style={{ borderColor: "var(--line)" }}>
                   <td className="px-4 py-2 font-mono text-xs">
                     {new Date(e.created_at).toLocaleString()}
                   </td>

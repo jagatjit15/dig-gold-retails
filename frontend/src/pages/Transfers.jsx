@@ -10,7 +10,7 @@ import { CameraScanButton } from "@/components/CameraScanner";
 import { ArrowRight, CheckCircle2, Circle, Truck, AlertTriangle, X, PackageCheck, FilePlus2 } from "lucide-react";
 import { toast } from "sonner";
 
-const primary = { background: "var(--primary)", color: "var(--primary-fg)" };
+const primary = { background: "var(--brand)", color: "var(--brand-fg)" };
 const STATUS = {
   draft: { c: "var(--text-2)", i: FilePlus2, l: "Draft" },
   in_transit: { c: "var(--info)", i: Truck, l: "In transit" },
@@ -42,12 +42,20 @@ function Detail({ t, branchId, bname, onChange }) {
     try { const { data } = await fn(); onChange(data); if (ok) toast.success(ok); }
     catch (err) { toast.error(errMsg(err)); }
   };
-  const scan = (path) => (raw) => raw.trim() && act(() => api.post(`/transfers/${t.id}/${path}`, { code: raw.trim() }));
+  const scan = (path) => async (raw) => {
+    if (!raw.trim()) return;
+    try { onChange((await api.post(`/transfers/${t.id}/${path}`, { code: raw.trim() })).data); }
+    catch (err) {
+      toast.error(errMsg(err));
+      api.get(`/transfers/${t.id}`).then((r) => onChange(r.data)).catch(() => {});
+    }
+  };
+  const awaiting = ["in_transit", "received_with_variance"].includes(t.status);
   const got = t.items.filter((i) => i.received).length;
   const weight = t.items.reduce((s, i) => s + i.net_wt, 0);
 
   return (
-    <Card style={{ borderColor: "var(--border)", background: "var(--card)" }} data-testid="transfer-detail">
+    <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }} data-testid="transfer-detail">
       <CardContent className="p-6 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-mono font-semibold text-lg">{t.transfer_no}</span>
@@ -56,7 +64,8 @@ function Detail({ t, branchId, bname, onChange }) {
           <span className="ml-auto text-sm font-num">{t.items.length} items · {weight.toFixed(3)} g</span>
         </div>
         {t.status === "draft" && outgoing && <ScanBar onCode={scan("scan-out")} placeholder="Scan out items to send…" testId="transfer-scan-out-input" />}
-        {t.status === "in_transit" && incoming && (<>
+        {awaiting && incoming && (<>
+          {t.status === "received_with_variance" && <p className="text-sm" style={{ color: "var(--warning)" }}>Found a missing item later? Scan it in and receive again.</p>}
           <ScanBar onCode={scan("scan-in")} placeholder="Scan in items as they arrive…" testId="transfer-scan-in-input" />
           <div className="text-sm font-num" data-testid="transfer-received-count">{got} of {t.items.length} scanned in</div>
         </>)}
@@ -64,9 +73,9 @@ function Detail({ t, branchId, bname, onChange }) {
         <div className="space-y-1">
           {t.items.length === 0 && <div className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>No items yet.</div>}
           {t.items.map((i) => {
-            const missing = t.missing_item_ids.includes(i.item_id);
+            const missing = t.missing_item_ids.includes(i.item_id) && !i.received;
             return (
-              <div key={i.item_id} className="flex items-center gap-3 p-2 rounded-md border text-sm" style={{ borderColor: missing ? "var(--danger)" : "var(--border)" }} data-testid={`transfer-item-${i.tag_id}`}>
+              <div key={i.item_id} className="flex items-center gap-3 p-2 rounded-md border text-sm" style={{ borderColor: missing ? "var(--danger)" : "var(--line)" }} data-testid={`transfer-item-${i.tag_id}`}>
                 {t.status !== "draft" && (i.received ? <CheckCircle2 className="w-4 h-4" style={{ color: "var(--success)" }} /> : missing ? <AlertTriangle className="w-4 h-4" style={{ color: "var(--danger)" }} /> : <Circle className="w-4 h-4" style={{ color: "var(--text-muted)" }} />)}
                 <span className="font-mono flex-1">{i.tag_id}</span>
                 {missing && <span className="text-xs font-medium" style={{ color: "var(--danger)" }}>Missing</span>}
@@ -86,7 +95,7 @@ function Detail({ t, branchId, bname, onChange }) {
             <Button className="h-11" style={primary} disabled={!t.items.length} onClick={() => act(() => api.post(`/transfers/${t.id}/dispatch`), "Dispatched — items are now in transit")} data-testid="transfer-dispatch-button">Dispatch {t.items.length} items</Button>
             <Button variant="outline" className="h-11" onClick={() => act(() => api.post(`/transfers/${t.id}/cancel`), "Transfer cancelled")} data-testid="transfer-cancel-button">Cancel</Button>
           </>)}
-          {t.status === "in_transit" && incoming && (
+          {awaiting && incoming && (
             <Button className="h-11" style={primary} disabled={!got} data-testid="transfer-receive-button"
               onClick={() => (got === t.items.length || window.confirm(`${t.items.length - got} item(s) not scanned in will be flagged as missing. Continue?`)) &&
                 act(() => api.post(`/transfers/${t.id}/receive`), "Stock received")}>
@@ -129,7 +138,7 @@ export default function Transfers() {
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>Scan items out, dispatch, then the receiving branch scans them in. Anything not scanned in is flagged as missing.</p>
       </div>
       {canManage && (
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-5 flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium">Send stock from {bname(branchId)} to</span>
             <Select value={dest} onValueChange={setDest}>
@@ -141,12 +150,12 @@ export default function Transfers() {
         </Card>
       )}
       <div className="grid xl:grid-cols-[380px,1fr] gap-6 items-start">
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-3 space-y-1">
             {list.length === 0 && <div className="text-sm p-6 text-center" style={{ color: "var(--text-muted)" }}>No transfers yet.</div>}
             {list.map((t) => (
               <button key={t.id} onClick={() => setSel(t)} className="w-full text-left p-3 rounded-md border transition-colors"
-                style={{ borderColor: sel?.id === t.id ? "var(--primary)" : "var(--border)" }} data-testid={`transfer-row-${t.transfer_no}`}>
+                style={{ borderColor: sel?.id === t.id ? "var(--brand)" : "var(--line)" }} data-testid={`transfer-row-${t.transfer_no}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono font-semibold text-sm">{t.transfer_no}</span><StatusBadge s={t.status} />
                 </div>

@@ -1,0 +1,45 @@
+{
+  "summary": "Tested the 3 new features end to end, both API and UI. Backend: new pytest suite test_phase3_transfers_oldgold_lookbook.py, 7/8 passed. The one failure: lookbook accepts sold items. Transfers work through the full lifecycle (draft, scan-out, dispatch, scan-in, receive) including validations, RBAC, unexpected_codes, missing_item_ids, movements and in-transit blocking. Old gold works: valuation matches the formula (rate per fine gram = 24K rate / 0.999), the total is rounded, net_payable = grand - old, the 0-1 / stone>=gross / old>bill validations hold, old_gold_lots and receipt movements are created, and the PDF has the 'Old gold / exchange' section with 'Less: old gold value' and 'Net payable (Rs.)'. Lookbook works: RBAC, 7 items -> 422, other-branch item -> 400, 1080x1350 PNG, list, and mock broadcast records 'lookbook' messages with status mocked. UI: Transfers flow passed (create, scan-out, duplicate toast, dispatch, branch switch to MG-BLR, scan-in, confirm dialog, Received · items missing with the missing row highlighted, item shows in MG inventory). Billing old gold passed (negative line value, totals, net payable, last-bill summary, PDF download, in-transit item blocked at the counter). Lookbook passed (photo shown on the card, placeholder for the item without a photo, Indian price format, broadcast toast, history). Issues found: checked checkboxes are invisible (global theme variable clash), price overlaps the detail text on the card for large prices, sold items are accepted by the lookbook API, and an unexpected scan-in code is not shown until reload.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/lookbook", "issue": "Does not check item status. Sold or in-transit items of the branch are accepted (sold item -> 200). Spec says in-stock items only. Fix: add 'status': 'in_stock' to the items query at lookbook_router.py:52."},
+      {"endpoint": "lookbook.build_card", "issue": "The detail text ('22K916 · 123.456 g net') is fitted to cw-40 and ignores the right-aligned price drawn on the same line (ty+40). Prices of Rs 10 lakh and above overlap the detail text. Reproduced with inr(12345678) and a 123.456 g weight: the text collides. Fix: fit the detail to cw-40-textlength(price)-gap, or put the price on its own line."},
+      {"endpoint": "POST /api/transfers/{id}/receive", "issue": "Missing items stay in_transit for good and nothing can resolve them (no later scan-in, write-off or return). Consider allowing scan-in after received_with_variance, or a resolve/write-off action."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Lookbook item picker (shadcn Checkbox), and likely WhatsApp page and RadioGroup", "issue": "A ticked checkbox is invisible: computed background is transparent, border white and check icon white on a white card. RCA: index.css redefines --primary (and --card, --border) in :root as hex (#1f3a5f), overriding the HSL triplets the Tailwind theme expects ('hsl(var(--primary))'). bg-primary/border-primary become invalid. The only sign a card is selected is its border colour.", "selector": "[data-testid^='lookbook-item-'] button[role='checkbox']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [
+      {"flow": "Transfer scan-in of an unknown code", "issue": "The backend records the code in unexpected_codes but returns 404. The UI only shows an error toast and does not reload the transfer, so the 'Scanned but not on this transfer' warning stays hidden until another action (e.g. receive) refreshes it. Fix: in the scan catch path, call GET /transfers/{id} and onChange.", "affected_selectors": ["[data-testid='transfer-unexpected']", "[data-testid='transfer-scan-in-input']"]}
+    ],
+    "design_issues": [
+      {"screen": "Lookbook card PNG", "issues": ["With 1-2 items each tile is very tall (~870px), so ImageOps.fit crops a square photo to about half its width. A squarer tile or contain/letterbox would look better."]},
+      {"screen": "Lookbook page", "issues": ["One /files request per in-stock item to compute the Photo badge. This is N+1 and will be slow for large inventories; return a has_photo flag from the backend instead."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_phase3_transfers_oldgold_lookbook.py", "/app/backend/tests/seed_ui_phase3.py", "/app/test_reports/pytest/pytest_phase3.xml"],
+  "action_items": [
+    "Lookbook: restrict item_ids to status in_stock (lookbook_router.py create_card query).",
+    "Lookbook card: stop the price overlapping the detail line for large prices (lookbook.py build_card).",
+    "Fix the CSS variable clash: :root --primary/--card/--border hex values break shadcn hsl(var(--x)) classes, so ticked checkboxes are invisible.",
+    "Transfers UI: refresh the transfer after a 404 scan-in so unexpected codes show at once.",
+    "Optional: provide a way to resolve missing transfer items (late scan-in or write-off)."
+  ],
+  "critical_code_review_comments": [
+    "lookbook_router.create_card: no in_stock filter; the 'title' accepts whitespace only ('   ' passes min_length=1).",
+    "transfers_router: per-item update_one loops in dispatch are fine at this scale; the rollback on partial failure works.",
+    "billing_router._totals: old gold over the bill is checked after rounding; it correctly blocks before items are marked sold (verified the item stays in_stock).",
+    "invoice_pdf uses western digit grouping (155,555.40) while the UI and lookbook use Indian grouping (1,55,555.40). Inconsistent."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase3_transfers_oldgold_lookbook.py", "/app/backend/tests/seed_ui_phase3.py", "/app/memory/test_credentials.md"],
+  "success_rate": {"backend": "88% (7/8 passed; the failure is the lookbook sold-item check)", "frontend": "90% (all 3 flows work; checkbox visibility and unexpected-code refresh are minor)"},
+  "test_credentials": "Added manager.blr@swarnaerp.in / Manager@123 (manager, MG-BLR) to /app/memory/test_credentials.md",
+  "seed_data_creation": "TEST-*/UI5BA0-* items in ZB-MAIN/MG-BLR; transfers TR-ZB-MAIN-0002..0005 (0002 draft, 0004 cancelled); bills ZB-MAIN-00006..00008 (00006, 00008 with old gold); lookbook cards 'TEST Card *', 'TEST sold', 'UI Festive Drop'; mock WhatsApp lookbook messages.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run pytest tests/test_phase3_transfers_oldgold_lookbook.py (pypdf is installed for the PDF text test). test_sold_item_rejected should pass once the lookbook fix is in. Seed UI items with tests/seed_ui_phase3.py (prints tag ids). Checkbox selector: [data-testid='lookbook-item-TAG'] button[role='checkbox'].",
+  "rca of the issue": "Invisible checkbox: index.css :root defines --primary: #1f3a5f (hex) and this wins over the HSL triplet in @layer base, so Tailwind's 'hsl(var(--primary))' is invalid. Computed bg is transparent and the white check icon sits on white."
+}

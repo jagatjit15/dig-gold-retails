@@ -56,7 +56,7 @@ function TopBar() {
     <header
       className="h-16 flex items-center justify-between px-6 border-b sticky top-0 z-30 backdrop-blur"
       style={{
-        borderColor: "var(--border)",
+        borderColor: "var(--line)",
         background: "color-mix(in oklab, var(--bg) 92%, transparent)",
       }}
     >
@@ -67,7 +67,7 @@ function TopBar() {
               variant="outline"
               className="h-9 gap-2"
               data-testid="branch-switcher-dropdown"
-              style={{ borderColor: "var(--border)" }}
+              style={{ borderColor: "var(--line)" }}
             >
               <span className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
                 Branch
@@ -94,7 +94,7 @@ function TopBar() {
         </DropdownMenu>
 
         <div className="hidden md:flex items-center gap-4 pl-6 border-l"
-          style={{ borderColor: "var(--border)" }} data-testid="rate-ticker">
+          style={{ borderColor: "var(--line)" }} data-testid="rate-ticker">
           {[
             { label: "24K", key: findRate("gold", "24K"), tid: "gold-rate-24k-val" },
             { label: "22K", key: findRate("gold", "22K916"), tid: "gold-rate-22k-val" },
@@ -153,10 +153,10 @@ function Sidebar() {
   return (
     <aside
       className="w-64 shrink-0 border-r flex flex-col"
-      style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+      style={{ borderColor: "var(--line)", background: "var(--surface)" }}
     >
       <div className="h-16 flex items-center gap-3 px-6 border-b"
-        style={{ borderColor: "var(--border)" }}>
+        style={{ borderColor: "var(--line)" }}>
         <div className="w-9 h-9 rounded-md flex items-center justify-center"
           style={{ background: "var(--gold)" }}>
           <Crown className="w-5 h-5 text-white" />
@@ -182,8 +182,8 @@ function Sidebar() {
               }`
             }
             style={({ isActive }) => isActive ? {
-              borderLeft: "3px solid var(--primary)", color: "var(--primary)",
-              background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+              borderLeft: "3px solid var(--brand)", color: "var(--brand)",
+              background: "color-mix(in oklab, var(--brand) 10%, transparent)",
             } : { color: "var(--text-2)" }}
           >
             <n.icon className="w-4 h-4" />
@@ -192,9 +192,9 @@ function Sidebar() {
         ))}
       </nav>
       <div className="p-4 border-t text-[11px] font-mono"
-        style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
+        style={{ borderColor: "var(--line)", color: "var(--text-muted)" }}>
         <Badge variant="outline" className="font-mono text-[10px]"
-          style={{ borderColor: "var(--border)" }}>
+          style={{ borderColor: "var(--line)" }}>
           {user?.role?.toUpperCase()}
         </Badge>
         <div className="mt-2">v0.2</div>

@@ -47,7 +47,7 @@ export default function Dashboard() {
 
       {/* Rate Board */}
       <Card data-testid="daily-rate-board-card" className="overflow-hidden"
-        style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <div className="h-1 shimmer-gold"></div>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-5">
@@ -64,7 +64,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {rates.map((r) => (
               <div key={r.id} className="rounded-md p-4 border"
-                style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                style={{ borderColor: "var(--line)", background: "var(--surface)" }}
                 data-testid={`rate-card-${r.purity_code}`}>
                 <div className="text-[10px] uppercase tracking-widest font-medium"
                   style={{ color: "var(--text-muted)" }}>
@@ -109,7 +109,7 @@ export default function Dashboard() {
 
 function StatCard({ icon: Icon, label, value, mono, testId }) {
   return (
-    <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-5">
         <div className="flex items-center gap-2 text-xs uppercase tracking-widest"
           style={{ color: "var(--text-muted)" }}>

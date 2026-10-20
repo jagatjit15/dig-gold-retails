@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Sparkles, Send, Download } from "lucide-react";
 import { toast } from "sonner";
 
-const primary = { background: "var(--primary)", color: "var(--primary-fg)" };
+const primary = { background: "var(--brand)", color: "var(--brand-fg)" };
 
 function useBlob(fileId) {
   const [url, setUrl] = useState(null);
@@ -44,12 +44,12 @@ function Preview({ card, onSent }) {
   };
 
   return (
-    <Card style={{ borderColor: "var(--border)", background: "var(--card)" }} data-testid="lookbook-preview">
+    <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }} data-testid="lookbook-preview">
       <CardContent className="p-6 grid md:grid-cols-[minmax(0,360px),1fr] gap-6">
         <div>
-          {url ? <img src={url} alt={card.title} className="w-full rounded-md border" style={{ borderColor: "var(--border)" }} data-testid="lookbook-card-image" />
+          {url ? <img src={url} alt={card.title} className="w-full rounded-md border" style={{ borderColor: "var(--line)" }} data-testid="lookbook-card-image" />
             : <div className="aspect-[4/5] rounded-md animate-pulse" style={{ background: "var(--surface)" }} />}
-          {url && <a href={url} download={`${card.title}.png`} className="mt-2 inline-flex items-center gap-1 text-sm" style={{ color: "var(--primary)" }} data-testid="lookbook-download-link"><Download className="w-4 h-4" /> Download PNG</a>}
+          {url && <a href={url} download={`${card.title}.png`} className="mt-2 inline-flex items-center gap-1 text-sm" style={{ color: "var(--brand)" }} data-testid="lookbook-download-link"><Download className="w-4 h-4" /> Download PNG</a>}
         </div>
         <div className="space-y-4">
           <h3 className="font-semibold">Send on WhatsApp</h3>
@@ -82,12 +82,8 @@ export default function Lookbook() {
   useEffect(() => {
     if (!branchId) return;
     setPicked([]); setCurrent(null);
-    api.get(`/items?branch_id=${branchId}&status=in_stock`).then(async (r) => {
-      setItems(r.data);
-      const withPhoto = await Promise.all(r.data.map((i) => api.get(`/files?owner_type=item&owner_id=${i.id}`)
-        .then((f) => (f.data.some((x) => x.content_type.startsWith("image/")) ? i.id : null)).catch(() => null)));
-      setPhotoIds(new Set(withPhoto.filter(Boolean)));
-    }).catch(() => {});
+    api.get(`/items?branch_id=${branchId}&status=in_stock`).then((r) => setItems(r.data)).catch(() => {});
+    api.get(`/lookbook/photo-items?branch_id=${branchId}`).then((r) => setPhotoIds(new Set(r.data))).catch(() => {});
     loadCards();
   }, [branchId]); // eslint-disable-line
 
@@ -110,7 +106,7 @@ export default function Lookbook() {
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>Pick up to 6 items. Photos come from each item's Files; prices use today's rate incl. GST.</p>
       </div>
       {canCreate ? (
-        <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
           <CardContent className="p-6 space-y-4">
             <div className="grid md:grid-cols-2 gap-3">
               <div><Label>Card title *</Label><Input className="h-11" maxLength={60} value={title} onChange={(e) => setTitle(e.target.value)} data-testid="lookbook-title-input" /></div>
@@ -120,7 +116,7 @@ export default function Lookbook() {
               {items.length === 0 && <div className="text-sm" style={{ color: "var(--text-muted)" }}>No in-stock items in this branch.</div>}
               {items.map((i) => (
                 <label key={i.id} className="flex items-center gap-3 p-3 rounded-md border cursor-pointer text-sm"
-                  style={{ borderColor: picked.includes(i.id) ? "var(--primary)" : "var(--border)" }} data-testid={`lookbook-item-${i.tag_id}`}>
+                  style={{ borderColor: picked.includes(i.id) ? "var(--brand)" : "var(--line)" }} data-testid={`lookbook-item-${i.tag_id}`}>
                   <Checkbox checked={picked.includes(i.id)} onCheckedChange={() => toggle(i.id)} />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{i.description || i.tag_id}</div>

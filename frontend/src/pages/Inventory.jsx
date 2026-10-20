@@ -111,7 +111,7 @@ export default function Inventory() {
         </div>
       </div>
 
-      <Card style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+      <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm" data-testid="inventory-table">
@@ -146,7 +146,7 @@ export default function Inventory() {
                   const pur = purities.find((p) => p.id === i.purity_id);
                   return (
                     <tr key={i.id} className="border-t"
-                      style={{ borderColor: "var(--border)" }}
+                      style={{ borderColor: "var(--line)" }}
                       data-testid={`inventory-row-${i.tag_id}`}>
                       <Td>
                         <div className="font-medium">{i.tag_id}</div>
@@ -265,7 +265,7 @@ function AddItemDialog({ open, setOpen, cats, purities, branchId, onDone }) {
         <Button
           data-testid="add-tagged-item-button"
           className="gap-2"
-          style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+          style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
         >
           <Plus className="w-4 h-4" /> New Tagged Item
         </Button>
@@ -337,7 +337,7 @@ function AddItemDialog({ open, setOpen, cats, purities, branchId, onDone }) {
           <DialogFooter className="col-span-2 mt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={busy}
-              style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+              style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
               data-testid="item-submit-button">
               {busy ? "Saving…" : "Add Item"}
             </Button>

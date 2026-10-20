@@ -71,7 +71,7 @@ function RatesTab() {
   };
 
   return (
-    <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card className="mt-4" style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-6 grid md:grid-cols-[1fr,320px] gap-6">
         <div>
           <h3 className="font-semibold tracking-tight text-lg mb-3">Latest rates</h3>
@@ -79,7 +79,7 @@ function RatesTab() {
             {rates.map((r) => (
               <div key={r.id}
                 className="flex items-center justify-between p-3 rounded-md border"
-                style={{ borderColor: "var(--border)" }}
+                style={{ borderColor: "var(--line)" }}
                 data-testid={`rate-row-${r.purity_code}`}>
                 <div>
                   <div className="font-medium">{r.purity_code}</div>
@@ -124,7 +124,7 @@ function RatesTab() {
               onChange={(e) => setPrice(e.target.value)}
               data-testid="rate-input" />
           </div>
-          <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+          <Button type="submit" style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
             className="w-full" data-testid="rate-update-button">
             Save new rate
           </Button>
@@ -151,14 +151,14 @@ function BranchesTab() {
     }
   };
   return (
-    <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card className="mt-4" style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-6 grid md:grid-cols-[1fr,320px] gap-6">
         <div>
           <h3 className="font-semibold tracking-tight text-lg mb-3">Branches</h3>
           <div className="space-y-2">
             {branches.map((b) => (
               <div key={b.id} className="p-3 rounded-md border flex items-start justify-between"
-                style={{ borderColor: "var(--border)" }}>
+                style={{ borderColor: "var(--line)" }}>
                 <div>
                   <div className="font-medium">{b.name}</div>
                   <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
@@ -186,7 +186,7 @@ function BranchesTab() {
                 data-testid={`branch-${k}-input`} />
             </div>
           ))}
-          <Button type="submit" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+          <Button type="submit" style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
             className="w-full" data-testid="branch-submit-button">
             Create branch
           </Button>
@@ -200,11 +200,11 @@ function PuritiesTab() {
   const [list, setList] = useState([]);
   useEffect(() => { api.get("/purities").then((r) => setList(r.data)); }, []);
   return (
-    <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card className="mt-4" style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-6 space-y-2">
         {list.map((p) => (
           <div key={p.id} className="flex items-center justify-between p-3 rounded-md border"
-            style={{ borderColor: "var(--border)" }}>
+            style={{ borderColor: "var(--line)" }}>
             <div>
               <div className="font-medium">{p.label}</div>
               <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
@@ -223,11 +223,11 @@ function CategoriesTab() {
   const [list, setList] = useState([]);
   useEffect(() => { api.get("/categories").then((r) => setList(r.data)); }, []);
   return (
-    <Card className="mt-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+    <Card className="mt-4" style={{ borderColor: "var(--line)", background: "var(--panel)" }}>
       <CardContent className="p-6 space-y-2">
         {list.map((c) => (
           <div key={c.id} className="flex items-center justify-between p-3 rounded-md border"
-            style={{ borderColor: "var(--border)" }}>
+            style={{ borderColor: "var(--line)" }}>
             <div>
               <div className="font-medium">{c.name}</div>
               <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>

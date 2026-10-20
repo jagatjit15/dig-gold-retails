@@ -25,7 +25,7 @@ export function OldGoldCard({ entries, setEntries, priced }) {
   };
 
   return (
-    <Card style={{ borderColor: "var(--border)", background: "var(--card)" }} data-testid="old-gold-voucher-entry-form">
+    <Card style={{ borderColor: "var(--line)", background: "var(--panel)" }} data-testid="old-gold-voucher-entry-form">
       <CardContent className="p-6 space-y-3">
         <div>
           <h3 className="font-semibold">Old gold exchange</h3>
@@ -56,7 +56,7 @@ export function OldGoldCard({ entries, setEntries, priced }) {
         {entries.map((e, i) => {
           const p = priced?.[i];
           return (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-md border text-sm" style={{ borderColor: "var(--border)" }} data-testid={`old-gold-line-${i}`}>
+            <div key={i} className="flex items-center gap-3 p-3 rounded-md border text-sm" style={{ borderColor: "var(--line)" }} data-testid={`old-gold-line-${i}`}>
               <div className="flex-1">
                 <div className="font-medium">{e.description}</div>
                 <div className="text-xs font-num" style={{ color: "var(--text-2)" }}>

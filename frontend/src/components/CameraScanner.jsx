@@ -88,7 +88,7 @@ export function CameraScanButton({ onDetect, continuous = false, testId = "camer
           <DialogHeader><DialogTitle>Scan with camera</DialogTitle></DialogHeader>
           {open && <CameraView onDetect={onDetect} continuous={continuous} onClose={() => setOpen(false)} />}
           {continuous && (
-            <Button onClick={() => setOpen(false)} className="h-11" style={{ background: "var(--primary)", color: "var(--primary-fg)" }}
+            <Button onClick={() => setOpen(false)} className="h-11" style={{ background: "var(--brand)", color: "var(--brand-fg)" }}
               data-testid="camera-done-button">Done</Button>
           )}
         </DialogContent>

@@ -171,8 +171,8 @@ async def dispatch(tid: str, user: UserPublic = Depends(managers)):
 async def scan_in(tid: str, body: CodeIn, user: UserPublic = Depends(managers)):
     t = await _get(tid)
     enforce_branch(user, t["to_branch_id"])
-    if t["status"] != "in_transit":
-        raise HTTPException(400, "Transfer is not in transit")
+    if t["status"] not in ("in_transit", "received_with_variance"):
+        raise HTTPException(400, "Transfer is not awaiting receipt")
     code = body.code.strip()
     item = await _find_item(code)
     line = item and next((i for i in t["items"] if i["item_id"] == item["id"]), None)
@@ -189,12 +189,14 @@ async def scan_in(tid: str, body: CodeIn, user: UserPublic = Depends(managers)):
 async def receive(tid: str, user: UserPublic = Depends(managers)):
     t = await _get(tid)
     enforce_branch(user, t["to_branch_id"])
-    if t["status"] != "in_transit":
-        raise HTTPException(400, "Transfer is not in transit")
-    got = [i for i in t["items"] if i["received"]]
+    if t["status"] not in ("in_transit", "received_with_variance"):
+        raise HTTPException(400, "Transfer is not awaiting receipt")
+    pending = set(await db.items.distinct("id", {"id": {"$in": [i["item_id"] for i in t["items"]]},
+                                                 "status": "in_transit"}))
+    got = [i for i in t["items"] if i["received"] and i["item_id"] in pending]
     missing = [i["item_id"] for i in t["items"] if not i["received"]]
     if not got:
-        raise HTTPException(400, "Scan in at least one item before receiving")
+        raise HTTPException(400, "Scan in at least one new item before receiving")
     await db.items.update_many({"id": {"$in": [i["item_id"] for i in got]}, "status": "in_transit"},
                                {"$set": {"status": "in_stock", "branch_id": t["to_branch_id"],
                                          "updated_at": now_iso()}})
