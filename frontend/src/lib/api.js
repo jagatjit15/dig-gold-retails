@@ -25,7 +25,7 @@ api.interceptors.response.use(
     }
     original._retry = true;
     try {
-      refreshing = refreshing || api.post("/auth/refresh").finally(() => { refreshing = null; });
+      refreshing = refreshing || api.post("/auth/refresh").finally(() => { setTimeout(() => { refreshing = null; }, 1500); });
       await refreshing;
       return api(original);
     } catch (_e) {

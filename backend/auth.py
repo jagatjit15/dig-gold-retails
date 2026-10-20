@@ -79,9 +79,6 @@ def clear_auth_cookies(response: Response):
 
 async def get_current_user(request: Request) -> UserPublic:
     token = request.cookies.get(ACCESS_COOKIE)
-    authorization = request.headers.get("Authorization", "")
-    if not token and authorization.lower().startswith("bearer "):
-        token = authorization.split(" ", 1)[1]
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     payload = decode_token(token)

@@ -16,11 +16,13 @@ RUN = uuid.uuid4().hex[:6].upper()
 def login(email, pw):
     r = requests.post(f"{API}/auth/login", json={"email": email, "password": pw})
     assert r.status_code == 200, r.text
-    return r.json()
+    # tokens now live only in httpOnly cookies; expose them for cookie-header auth
+    return {**r.json(), "access_token": r.cookies.get("swarna_access"),
+            "refresh_token": r.cookies.get("swarna_refresh")}
 
 
 def H(tok):
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Cookie": f"swarna_access={tok}"}
 
 
 @pytest.fixture(scope="session")
@@ -253,7 +255,7 @@ class TestStaff:
         r = requests.patch(f"{API}/auth/users/{uid}", headers=admin, json={"role": "manager"})
         assert r.status_code == 200 and r.json()["role"] == "manager"
         assert requests.get(f"{API}/auth/me", headers=h).status_code == 401
-        assert requests.post(f"{API}/auth/refresh", json={"refresh_token": tok["refresh_token"]}).status_code == 401
+        assert requests.post(f"{API}/auth/refresh", headers={"Cookie": f"swarna_refresh={tok['refresh_token']}"}).status_code == 401
         h = H(login(email, "Life@1234")["access_token"])
         # deactivate
         assert requests.patch(f"{API}/auth/users/{uid}", headers=admin, json={"active": False}).status_code == 200

@@ -20,13 +20,13 @@ def login(email, pw):
 
 
 def H(tok):
-    return {"Authorization": f"Bearer {tok}"}
+    return {"Cookie": f"swarna_access={tok}"}
 
 
 def tok(email, pw):
     r = login(email, pw)
     assert r.status_code == 200, r.text
-    return H(r.json()["access_token"])
+    return H(r.cookies.get("swarna_access"))
 
 
 @pytest.fixture(scope="session")
@@ -64,7 +64,7 @@ def mgr_blr(admin, masters):
         assert c.status_code in (200, 201), c.text
         r = login(*MGR_BLR)
     assert r.status_code == 200, r.text
-    return H(r.json()["access_token"])
+    return H(r.cookies.get("swarna_access"))
 
 
 def make_item(admin, masters, branch="ZB-MAIN", gross=10.0, stone=1.0, desc=None):

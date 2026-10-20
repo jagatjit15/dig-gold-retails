@@ -1,0 +1,48 @@
+{
+  "summary": "Iteration 4: tested the move to httpOnly cookie auth, the CSRF Origin middleware and the admin seed from env, plus a full regression run. Backend: 39/39 pytest pass. That is the new test_cookie_auth_csrf.py (14 tests) and the phase2/phase3/edge suites (25 tests), whose login helpers were changed to use cookies. Frontend: every flow requested works: login, session kept on page reload, no tokens in localStorage, httpOnly cookies that JS cannot read, transparent refresh after the swarna_access cookie is deleted, logout followed by a redirect to /login, Inventory Files upload/download, Billing scan + old gold + bill + PDF (200), Stock Audit scans list and scan-mode toggle, Scan Lookup history, Transfers, Lookbook blob image (naturalWidth 1080), Staff (admin only), and counter.blr restricted to the MG-BLR branch. No 4xx/5xx responses were seen during the UI flows apart from the 401s that come before an automatic refresh.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/files", "issue": "One transient 502 Bad Gateway from the storage upstream while running the seed script. The immediate retry returned 200 twice. Flaky, not caused by the auth change."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "401 -> refresh interceptor", "issue": "Minor: when several requests fail with 401 at once, a request whose 401 arrives after the shared `refreshing` promise has finished (and been set back to null) starts a second /auth/refresh. Seen as 2 refresh calls in one navigation. Harmless (tokens are not rotated or revoked on refresh) but wasteful. A fix is to keep the resolved promise for about 1s, or retry right away if the swarna_access cookie has been renewed since the request was sent.", "affected_selectors": []}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_cookie_auth_csrf.py",
+    "/app/backend/tests/test_phase2_billing_files_whatsapp_staff.py",
+    "/app/backend/tests/test_phase2_edge.py",
+    "/app/backend/tests/test_phase3_transfers_oldgold_lookbook.py",
+    "/app/test_reports/pytest/pytest_iter4.xml"
+  ],
+  "action_items": [
+    "Optional: get_current_user still accepts an `Authorization: Bearer` header as a fallback (auth.py lines 82-84). It does not open a CSRF hole, but nothing uses it now. Remove it unless API clients need it.",
+    "Optional: logout only clears the cookies. A copied refresh token stays valid for 7 days. Think about bumping token_version on logout, or keeping a server-side denylist of refresh tokens (jti).",
+    "Optional: de-duplicate concurrent refresh calls in api.js (see integration_issues)."
+  ],
+  "critical_code_review_comments": [
+    "The ingress rewrites the cookies to `SameSite=None; Partitioned` (checked in the raw Set-Cookie headers). HttpOnly and Secure are kept. With SameSite=None, the Origin-check middleware is the only CSRF protection. It works: evil Origin gets 403 on POST/PATCH, the app Origin is allowed, GET is not blocked.",
+    "check_origin lets through write requests that have no Origin header. That is acceptable, because browsers always send Origin on cross-site POST/PUT/PATCH/DELETE. Non-browser clients have no cookies to abuse.",
+    "CORS preflight returns the exact origin with credentials=true for allowed origins and no ACAO header for an evil origin. Correct.",
+    "The admin bcrypt hash starts with $2b$. seed_if_empty re-syncs the password when ADMIN_PASSWORD changes. Login with the env credentials works.",
+    "Index keys removed: StockAudit uses s.id (server audit_scans id), ScanLookup uses crypto.randomUUID(), OldGoldCard uses e.uid. The uid field is sent in the old_gold payload and the backend ignores it (bill created OK). crypto.randomUUID needs a secure context: fine on https, but it fails on plain-http LAN deployments."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_cookie_auth_csrf.py (new)",
+    "/app/backend/tests/test_phase2_billing_files_whatsapp_staff.py (login/H helpers -> cookie auth; refresh via swarna_refresh cookie)",
+    "/app/backend/tests/test_phase3_transfers_oldgold_lookbook.py (H/token helpers -> cookie auth)",
+    "/app/backend/tests/test_phase2_edge.py (cookie auth)",
+    "/app/backend/tests/seed_ui_phase3.py (cookie auth)"
+  ],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "100% of requested flows"},
+  "test_credentials": "Taken from /app/memory/test_credentials.md. All of them work: admin@swarnaerp.in/Admin@12345, counter.blr@swarnaerp.in/Counter@123, manager.zb and manager.blr/Manager@123.",
+  "seed_data_creation": "Ran seed_ui_phase3.py, which created items UIF6B2-TR1/TR2/BILL/LB1/LB2 in ZB-MAIN, with photos on LB1. Bill ZB-MAIN-00015 was created in the UI (UIF6B2-BILL sold, with an old gold line). An audit session was created and closed. TEST_ throwaway users were created for the revocation tests and deactivated afterwards. login_attempts was cleared before the run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Auth uses cookies only: swarna_access (path /api, 15 min) and swarna_refresh (path /api/auth). In tests, call requests.Session().post('/api/auth/login') and send the header Origin: REACT_APP_BACKEND_URL, or use the H() helper, which sends a 'Cookie: swarna_access=...' header. The backend still accepts a Bearer header as a fallback. pytest.ini forces -n 2. For a serial run use `-n 0`, not `-p no:xdist`. App routes: /audit (Stock Audit), /scan (Scan Lookup), /billing, /inventory, /transfers, /lookbook, /staff. Clear lockouts with mongosh test_database --eval 'db.login_attempts.deleteMany({})'."
+}
