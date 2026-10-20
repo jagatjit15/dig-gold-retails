@@ -13,7 +13,7 @@ from models import UserInDB, UserPublic, Role
 
 # Secret: pick up from env, fallback dev-only secret (fail-fast philosophy means
 # in prod this must be set).
-JWT_SECRET = os.environ.get("JWT_SECRET", "dev-insecure-secret-change-me")
+JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
 ACCESS_TTL_MIN = 60
 REFRESH_TTL_DAYS = 7
