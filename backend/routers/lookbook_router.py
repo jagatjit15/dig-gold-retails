@@ -106,12 +106,12 @@ async def broadcast_card(card_id: str, body: CardBroadcast, user: UserPublic = D
     if not card:
         raise HTTPException(404, "Lookbook card not found")
     enforce_branch(user, card["branch_id"])
-    numbers, invalid = await resolve_recipients(card["branch_id"], body.audience, body.phones)
+    numbers, invalid, campaign = await resolve_recipients(card["branch_id"], body.audience, body.phones)
     f = await db.files.find_one({"id": card["file_id"]}, {"_id": 0})
     png = (await asyncio.to_thread(get_object, f["storage_path"]))[0]
     caption = body.message or card["title"]
     provider = get_provider()
-    campaign, counts = new_id(), {"sent": 0, "failed": 0}
+    counts = {"sent": 0, "failed": 0}
     for to in numbers:
         try:
             res = await provider.send_image(to, f"{card['title']}.png", png, caption)

@@ -64,14 +64,17 @@ def _origin_allowed(request: Request) -> bool:
     return not (request.cookies.get("swarna_access") or request.cookies.get("swarna_refresh"))
 
 
+SECURITY_HEADERS = {"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY",
+                    "Referrer-Policy": "strict-origin-when-cross-origin"}
+
+
 @app.middleware("http")
 async def check_origin(request: Request, call_next):
     if request.method in UNSAFE and not _origin_allowed(request):
-        return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
+        return JSONResponse({"detail": "Origin not allowed"}, status_code=403, headers=SECURITY_HEADERS)
     response = await call_next(request)
-    response.headers.setdefault("X-Content-Type-Options", "nosniff")
-    response.headers.setdefault("X-Frame-Options", "DENY")
-    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    for k, v in SECURITY_HEADERS.items():
+        response.headers.setdefault(k, v)
     return response
 
 

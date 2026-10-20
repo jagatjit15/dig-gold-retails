@@ -44,17 +44,22 @@ class Broadcast(BaseModel):
 BROADCASTS_PER_HOUR = 10
 
 
-async def check_broadcast_quota(branch_id: str):
-    since = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
-    recent = await db.whatsapp_messages.distinct(
-        "campaign_id", {"branch_id": branch_id, "created_at": {"$gte": since},
-                        "campaign_id": {"$ne": None}})
-    if len(recent) >= BROADCASTS_PER_HOUR:
+async def check_broadcast_quota(branch_id: str) -> str:
+    """Reserve a campaign slot first, then count, so concurrent requests can't exceed the limit."""
+    now = datetime.now(timezone.utc)
+    campaign = new_id()
+    await db.broadcast_campaigns.insert_one({"id": campaign, "branch_id": branch_id,
+                                             "created_at": now.isoformat()})
+    since = (now - timedelta(hours=1)).isoformat()
+    total = await db.broadcast_campaigns.count_documents(
+        {"branch_id": branch_id, "created_at": {"$gte": since}})
+    if total > BROADCASTS_PER_HOUR:
+        await db.broadcast_campaigns.delete_one({"id": campaign})
         raise HTTPException(429, f"Limit of {BROADCASTS_PER_HOUR} broadcasts per hour reached for this branch")
+    return campaign
 
 
 async def resolve_recipients(branch_id: str, audience: str, phones: List[str]):
-    await check_broadcast_quota(branch_id)
     raw = phones if audience == "custom" else await db.bills.distinct(
         "customer_phone", {"branch_id": branch_id, "customer_phone": {"$nin": [None, ""]}})
     numbers = {normalize_phone(p) for p in raw}
@@ -64,16 +69,15 @@ async def resolve_recipients(branch_id: str, audience: str, phones: List[str]):
         raise HTTPException(400, "No valid recipient numbers")
     if len(numbers) > 1000:
         raise HTTPException(400, "Maximum 1000 recipients per broadcast")
-    return sorted(numbers), invalid
+    return sorted(numbers), invalid, await check_broadcast_quota(branch_id)
 
 
 @router.post("/broadcast")
 async def broadcast(body: Broadcast,
                     user: UserPublic = Depends(require_roles("admin", "manager"))):
     enforce_branch(user, body.branch_id)
-    numbers, invalid = await resolve_recipients(body.branch_id, body.audience, body.phones)
+    numbers, invalid, campaign = await resolve_recipients(body.branch_id, body.audience, body.phones)
     provider = get_provider()
-    campaign = new_id()
     counts = {"sent": 0, "failed": 0}
     for to in numbers:
         try:

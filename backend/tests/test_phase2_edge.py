@@ -9,7 +9,7 @@ API = os.environ.get("REACT_APP_BACKEND_URL").rstrip("/") + "/api"
 
 def _admin():
     t = requests.post(f"{API}/auth/login", json={"email": "admin@swarnaerp.in", "password": "Admin@12345"})
-    return {"Cookie": f"swarna_access={t.cookies.get('swarna_access')}"}
+    return {"Cookie": f"swarna_access={t.cookies.get('swarna_access')}", "Origin": API[:-4]}
 
 
 def _masters(h):

@@ -2,7 +2,7 @@
 import io, os, uuid, requests
 from PIL import Image, ImageDraw
 API = os.environ["REACT_APP_BACKEND_URL"].rstrip("/") + "/api"
-h = {"Cookie": "swarna_access=" + requests.post(f"{API}/auth/login", json={"email": "admin@swarnaerp.in", "password": "Admin@12345"}).cookies["swarna_access"]}
+h = {"Origin": API[:-4], "Cookie": "swarna_access=" + requests.post(f"{API}/auth/login", json={"email": "admin@swarnaerp.in", "password": "Admin@12345"}).cookies["swarna_access"]}
 br = {b["code"]: b["id"] for b in requests.get(f"{API}/branches", headers=h).json()}
 pur = {p["code"]: p["id"] for p in requests.get(f"{API}/purities", headers=h).json()}
 cat = requests.get(f"{API}/categories", headers=h).json()[0]["id"]

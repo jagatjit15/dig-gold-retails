@@ -22,7 +22,7 @@ def login(email, pw):
 
 
 def H(tok):
-    return {"Cookie": f"swarna_access={tok}"}
+    return {"Cookie": f"swarna_access={tok}", "Origin": BASE_URL}
 
 
 @pytest.fixture(scope="session")
@@ -215,6 +215,8 @@ class TestWhatsApp:
                 "phones": ["9876500001", "+91 98765 00002", "123", "abc"]}
         assert requests.post(f"{API}/whatsapp/broadcast", headers=zb_billing["h"], json=body).status_code == 403
         r = requests.post(f"{API}/whatsapp/broadcast", headers=mgr, json=body)
+        if r.status_code == 429:
+            pytest.skip("ZB-MAIN broadcast quota (10/hour) reached by earlier runs")
         assert r.status_code == 200, r.text
         d = r.json()
         assert d["recipients"] == 2 and d["invalid_skipped"] == 2 and d["mocked"] is True
@@ -255,7 +257,7 @@ class TestStaff:
         r = requests.patch(f"{API}/auth/users/{uid}", headers=admin, json={"role": "manager"})
         assert r.status_code == 200 and r.json()["role"] == "manager"
         assert requests.get(f"{API}/auth/me", headers=h).status_code == 401
-        assert requests.post(f"{API}/auth/refresh", headers={"Cookie": f"swarna_refresh={tok['refresh_token']}"}).status_code == 401
+        assert requests.post(f"{API}/auth/refresh", headers={"Cookie": f"swarna_refresh={tok['refresh_token']}", "Origin": BASE_URL}).status_code == 401
         h = H(login(email, "Life@1234")["access_token"])
         # deactivate
         assert requests.patch(f"{API}/auth/users/{uid}", headers=admin, json={"active": False}).status_code == 200

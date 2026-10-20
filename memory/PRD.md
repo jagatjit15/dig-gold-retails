@@ -22,8 +22,10 @@ Multi-branch Indian retail Gold/Jewellery ERP (spec asked for Flutter + NestJS +
 - 2026-06 v0.3: branch transfers (draft → scan-out → dispatch/in transit → scan-in → receive; missing items flagged, late scan-in to resolve; unexpected codes logged), old gold exchange on bills (fineness × net × fine rate − deduction, after GST, net payable, old_gold_lots + receipt movement, PDF section), launch lookbook (1080×1350 PNG card from item photos with weight + price incl. GST, stored in object storage, WhatsApp broadcast — MOCKED). Tested iteration_3: backend 8/8 after fixes, all UI flows pass
 
 - 2026-06 code-review fixes: httpOnly cookie sessions (no tokens in localStorage), Origin check on write requests, explicit CORS list, admin seed from env, stable React keys, storage retry cleanup. Tested iteration_4: backend 39/39, all UI flows pass
+- 2026-06 security audit fixes: file downloads forced to attachment unless png/jpeg/webp/gif/pdf (+CSP sandbox, nosniff), audit log branch-scoped, item search regex escaped, admin seed no longer overwrites password, CSRF requires Origin/Referer when cookies present, security headers, POST /scan hides other-branch items, atomic 10 broadcasts/hour/branch quota, audit-log write lock. Tested iteration_5: 36/36 security tests, UI flows pass
 
 ## Known gaps
+- Audit hash-chain lock is per process; multi-instance deploys need a unique index on prev_hash + retry (one historic fork exists)
 - WhatsApp is MOCKED until a provider is connected
 - Real camera decoding not verifiable in headless tests
 - Logout clears cookies only; a stolen refresh cookie stays valid up to 7 days (no server-side revocation on logout)

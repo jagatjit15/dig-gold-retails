@@ -353,6 +353,8 @@ async def read_audit_log(
     limit: int = 100,
     user: UserPublic = Depends(require_roles("admin", "manager", "auditor")),
 ):
+    if user.role != "admin" and not user.branch_id:
+        raise HTTPException(403, "No branch assigned")
     q = {} if user.role == "admin" else {"branch_id": user.branch_id}
     docs = await db.audit_log.find(q, {"_id": 0}).sort(
         [("created_at", -1)]).to_list(min(max(limit, 1), 500))

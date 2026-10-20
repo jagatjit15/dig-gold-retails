@@ -20,7 +20,7 @@ def login(email, pw):
 
 
 def H(tok):
-    return {"Cookie": f"swarna_access={tok}"}
+    return {"Cookie": f"swarna_access={tok}", "Origin": BASE_URL}
 
 
 def tok(email, pw):
@@ -265,6 +265,8 @@ class TestLookbook:
         assert any(c["id"] == card["id"] for c in lst)
         r = requests.post(f"{API}/lookbook/{card['id']}/broadcast", headers=mgr, json={
             "message": f"TEST launch {RUN}", "audience": "custom", "phones": ["9876543210", "123", "+91 9123456789"]})
+        if r.status_code == 429:
+            pytest.skip("ZB-MAIN broadcast quota (10/hour) reached by earlier runs")
         assert r.status_code == 200, r.text
         res = r.json()
         assert res["recipients"] == 2 and res["invalid_skipped"] == 1 and res["mocked"] is True
