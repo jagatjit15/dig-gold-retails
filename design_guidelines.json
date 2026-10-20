@@ -1,0 +1,174 @@
+{
+  "project_name": "SwarnaERP - Multi-Branch Indian Retail Jewellery ERP",
+  "archetype": "Architectural Luxury & Precision Enterprise",
+  "theme_strategy": "Primary Light Theme (Warm Champagne & Ivory for daytime retail counters) with dynamic Dark Theme toggle (Obsidian & Matte Gold for evening/executive auditing)",
+  "color_palette": {
+    "light": {
+      "background": "#FDFBF7",
+      "surface": "#F4EFEA",
+      "surface_card": "#FFFFFF",
+      "border": "#E5DCD3",
+      "border_focus": "#C59B27",
+      "text_primary": "#1C1613",
+      "text_secondary": "#6E6259",
+      "text_muted": "#9C8F85",
+      "accent_gold": "#B8860B",
+      "accent_gold_hover": "#9A6F07",
+      "accent_gold_soft": "#FBF5E6",
+      "accent_rosewood": "#7A1C1C",
+      "status_success": "#1565C0",
+      "status_emerald": "#1B5E20",
+      "status_warning": "#E65100",
+      "status_danger": "#C62828",
+      "purity_24k": "#D4AF37",
+      "purity_22k": "#C59B27",
+      "purity_18k": "#A38029",
+      "purity_silver": "#708090",
+      "purity_platinum": "#4A6B82"
+    },
+    "dark": {
+      "background": "#0E0C0B",
+      "surface": "#171412",
+      "surface_card": "#1E1A17",
+      "border": "#332B25",
+      "border_focus": "#E6C25A",
+      "text_primary": "#F7F3EE",
+      "text_secondary": "#B8ADA3",
+      "text_muted": "#7A7067",
+      "accent_gold": "#D4AF37",
+      "accent_gold_hover": "#E6C25A",
+      "accent_gold_soft": "#2A2314",
+      "accent_rosewood": "#9B2C2C",
+      "status_success": "#42A5F5",
+      "status_emerald": "#4CAF50",
+      "status_warning": "#FF9800",
+      "status_danger": "#EF5350"
+    }
+  },
+  "typography": {
+    "font_family_heading": "Cormorant Garamond, Serif",
+    "font_family_subheading": "Cabinet Grotesk, sans-serif",
+    "font_family_body": "Manrope, sans-serif",
+    "font_family_numeric": "JetBrains Mono, monospace",
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap",
+    "scale": {
+      "h1": "text-3xl lg:text-4xl font-semibold tracking-tight font-serif",
+      "h2": "text-xl lg:text-2xl font-semibold tracking-tight font-serif",
+      "h3": "text-lg font-medium text-amber-900 dark:text-amber-100",
+      "body": "text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed font-sans",
+      "caption": "text-xs font-medium text-neutral-500 uppercase tracking-widest",
+      "weight_metric": "font-mono font-semibold tracking-tight text-amber-800 dark:text-amber-300",
+      "currency": "font-mono font-bold tracking-tight text-neutral-900 dark:text-neutral-50"
+    }
+  },
+  "layout_architecture": {
+    "navigation_sidebar": {
+      "style": "Fixed left rail, width 260px, brushed warm border right",
+      "header": "SwarnaERP Brand with Gold Crown Icon & Multi-branch Badge",
+      "modules": [
+        "Dashboard & Rate Board",
+        "Billing & POS Counter",
+        "Inventory & Tagged Items",
+        "Stock Audit & Scan Variance",
+        "Old Gold & Scrap Exchange",
+        "Karigar / Job Work",
+        "Customer Schemes & Bookings",
+        "Masters & Rates Settings",
+        "Label Printing Tag Generator",
+        "GST & Audit Reports",
+        "Admin & Security Logs"
+      ]
+    },
+    "top_bar": {
+      "components": [
+        "Branch Switcher dropdown (e.g. Zaveri Bazar Main, MG Road Store, Airport Kiosk)",
+        "Live Metal Ticker (24K: ₹7,450/g, 22K: ₹6,830/g, Silver: ₹88.50/g)",
+        "Quick Barcode Scan trigger button (Cmd+K / Camera / USB wedge focus)",
+        "Notification Bell for stock low & jobwork delays",
+        "User Profile & Branch Scoped Role badge (Store Manager / Billing Agent / Auditor)",
+        "Dark/Light Mode Theme Toggle"
+      ]
+    }
+  },
+  "key_modules_ui_specs": {
+    "daily_rate_board": {
+      "type": "Prominent Dashboard Header Card",
+      "design": "Brushed metal card with gold rate ticker, manual override modal, GST tax impact calculator (3% GST default), and purity matrix (24K, 22K, 18K, 14K, 925 Silver, 950 Platinum)."
+    },
+    "scan_service_pos": {
+      "type": "High-speed Billing & Inventory Scan View",
+      "features": [
+        "Focus-locked input field with optical green pulse border on active scan",
+        "USB Keyboard Wedge & Camera barcode scanner overlay",
+        "Item Tag Quick Preview (HUID barcode, Gross Wt, Net Wt, Stone Wt, Purity, Making charges)",
+        "Scan sound feedback simulation and error shake animation",
+        "Making charge calculator: per gram, fixed rate, or percentage discount toggle"
+      ]
+    },
+    "tag_label_printer": {
+      "type": "TSPL/ZPL Preview Canvas",
+      "features": [
+        "Real-time render of 2-part dumbbell tag (Jewellery Tag Standard)",
+        "Shows Item Tag ID, HUID (Hallmark Unique ID), Net Weight (e.g. 14.350g), Purity (22K916), Gross Wt, Stone Wt",
+        "Print command trigger for USB Zebra / TSC barcode printer"
+      ]
+    },
+    "stock_audit_variance": {
+      "type": "Data-dense Audit Grid",
+      "features": [
+        "Expected vs Scanned vs Missing vs Unrecorded items count",
+        "Filter by Tray / Counter / Safe / Category",
+        "Color-coded row highlight (Emerald = Found, Crimson = Missing, Amber = Mismatched Purity/Weight)",
+        "Export Audit Variance Report"
+      ]
+    }
+  },
+  "image_urls": {
+    "jewellery_display_1": "https://images.unsplash.com/photo-1724986481830-4e7b781c2bd1?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "jewellery_display_2": "https://images.unsplash.com/photo-1689560025810-4599bc195814?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "jewellery_display_3": "https://images.unsplash.com/photo-1622704776938-bed6cd156e04?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "component_guidelines": {
+    "buttons": "Pill-rounded or subtle 6px rounded edges. Primary buttons use deep warm amber `#B8860B` with gold shimmer hover and active scale `scale-95`. Secondary buttons use brushed stone border with subtle hover highlight.",
+    "tables": "Dense rows (`py-2.5 px-4`), clear zebra striping in light mode, sticky headers with backdrop blur, uppercase tracking-wider headers, numeric columns right-aligned with JetBrains Mono font.",
+    "cards": "1px solid `#E5DCD3` border in light mode (`#332B25` in dark mode). Elevated card headers with subtle champagne gold accent line. No blurry grey shadows — use crisp layered soft drop shadow `0 2px 10px rgba(28,22,19,0.04)`.",
+    "inputs": "Must feature explicit focus state with warm gold ring `ring-2 ring-amber-500/40 border-amber-600`. Numeric inputs auto-format to 3 decimal places for weights (e.g., `000.000` g) and 2 decimal places for INR currency.",
+    "toasts": "Use Sonner with customized metallic toast borders (Emerald for successful scan, Amber for old gold exchange calculation, Red for missing barcode)."
+  },
+  "data_testing_rules": {
+    "data_testid_convention": "kebab-case, role and entity based",
+    "required_test_ids": [
+      "branch-switcher-dropdown",
+      "daily-rate-board-card",
+      "gold-rate-24k-val",
+      "gold-rate-22k-val",
+      "silver-rate-val",
+      "rate-update-button",
+      "barcode-scan-input",
+      "camera-scan-trigger-button",
+      "inventory-table",
+      "add-tagged-item-button",
+      "billing-counter-scan-box",
+      "billing-item-line-gross-weight",
+      "billing-item-line-net-weight",
+      "billing-making-charge-input",
+      "billing-gst-summary-cgst",
+      "billing-gst-summary-sgst",
+      "billing-grand-total-val",
+      "generate-gst-pdf-invoice-button",
+      "old-gold-voucher-entry-form",
+      "label-print-preview-canvas",
+      "print-label-action-button",
+      "audit-scan-mode-toggle",
+      "audit-variance-missing-count",
+      "theme-toggle-button"
+    ]
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Ensure numeric values for weights are consistently formatted to 3 decimal places (e.g. '14.350 g' or '8.400 g') and monetary values in Indian Rupees (₹).",
+    "Ensure all interactive elements carry clear data-testid attributes.",
+    "Avoid generic blue/cyan gradients. Use warm champagne gold (#B8860B / #D4AF37), deep mahogany (#1C1613), and ivory (#FDFBF7) surfaces.",
+    "The camera scan feature and keyboard wedge reader must have visual feedback (pulsing green highlight on scanner active).",
+    "Never use transparent backgrounds on dropdowns, modal overlays, or sticky headers. Always include backdrop blur with solid warm ivory or obsidian opacity."
+  ]
+}
