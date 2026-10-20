@@ -11,8 +11,8 @@ import { Crown, Lock } from "lucide-react";
 export default function Login() {
   const nav = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState("admin@swarnaerp.in");
-  const [password, setPassword] = useState("Admin@12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
@@ -103,10 +103,6 @@ export default function Login() {
               >
                 {busy ? "Signing in…" : "Sign in"}
               </Button>
-              <div className="text-xs text-center font-mono"
-                style={{ color: "var(--text-muted)" }}>
-                admin@swarnaerp.in · Admin@12345
-              </div>
             </form>
           </CardContent>
         </Card>
